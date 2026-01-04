@@ -1,18 +1,38 @@
 const Navbar = () => {
-    return (
-        <div className="h-full flex">
-            <div className="left w-[40%] ml-[15%] mt-[1.5%] text-3xl font-medium">
-                Dragend
-            </div>
-            <div className="right w-[60%]">
-                <ul className="text-lg flex justify-evenly font-medium">
-                    <li className="mt-7">About</li>
-                    <li className="mt-7">Contact</li>
-                    <li><button className="bg-white mt-6 px-4 py-2 rounded-full shadow-xl">Get Started</button></li>
-                </ul>
-            </div>
-        </div>
-    );
+  return (
+    <div className="h-full flex mt-7">
+      <div className="left w-[30%] ml-[15%] mt-[1.5%] text-3xl font-medium">
+        Dragend
+      </div>
+      <div className="right w-[40%]">
+        <ul className="text-lg flex justify-evenly font-medium cursor-pointer ">
+          <li className="mt-7 cursor-pointer
+  text-black
+  hover:bg-linear-to-r hover:from-purple-800 hover:to-pink-900
+  hover:bg-clip-text hover:text-transparent
+  transition-all duration-300">About</li>
+          <li className="mt-7 cursor-pointer
+  text-black
+  hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500
+  hover:bg-clip-text hover:text-transparent
+  transition-all duration-300">Contact</li>
+          <li>
+            <button
+              className="
+    mt-4 ml-27 px-6 py-3 rounded-2xl cursor-pointer
+    bg-white text-black
+    hover:bg-linear-to-r hover:from-purple-700 hover:to-pink-600
+    hover:text-white
+    transition-all duration-500 
+  "
+            >
+              Get Started
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
 };
 
 export default Navbar;
