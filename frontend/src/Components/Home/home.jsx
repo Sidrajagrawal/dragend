@@ -5,6 +5,7 @@ import Footer from "./Footer";
 import HeroSection from "./HeroSection";
 import { ServicesSection } from "./ServicesSection";
 
+// home page
 const Home = () => {
     return (
         <div className="grid h-screen w-full">
