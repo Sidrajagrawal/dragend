@@ -16,7 +16,7 @@ app.use(express.json());
 if(MONGO_URL)
     connectDB(MONGO_URL);
 else
-    console.log("No URL of Database Fetech from .env");
+    console.log("No URL of Database Fetch from .env");
     
 
 app.use(cors({
