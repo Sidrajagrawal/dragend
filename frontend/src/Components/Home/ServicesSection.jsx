@@ -1,28 +1,24 @@
-import apiVideo from "../../media/api.mp4";
-import dbVideo from "../../media/db.mp4";
-import agentVideo from "../../media/agent.mp4";
-
 const services = [
   {
     title: "REST APIs",
-    video: apiVideo,
+    video: import.meta.env.VITE_API_VIDEO_URL,
   },
   {
     title: "AI Agent",
-    video: agentVideo,
+    video: import.meta.env.VITE_ROBO_VIDEO_URL,
   },
   {
     title: "Database Management",
-    video: dbVideo,
+    video: import.meta.env.VITE_DB_VIDEO_URLL,
   },
-  
+
 ];
 
 
 const ServicesSection = () => {
   return (
     <section className="w-full bg-white py-24">
-      
+
       {/* Heading */}
       <div className="text-center max-w-3xl mx-auto">
         <h2 className="text-5xl font-semibold text-black">
@@ -100,4 +96,4 @@ export default ServiceCard;
 
 
 
-export {ServicesSection};
+export { ServicesSection };
