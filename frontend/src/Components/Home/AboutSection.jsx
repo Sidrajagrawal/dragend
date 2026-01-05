@@ -1,4 +1,3 @@
-import bgVideo from "../../media/bg_video.mp4";
 const AboutSection = () => {
   return (
     <section
@@ -20,7 +19,7 @@ const AboutSection = () => {
   "
         >
           <video
-            src={bgVideo}
+            src={import.meta.env.VITE_BG_VIDEO_URL}
             autoPlay
             loop
             muted

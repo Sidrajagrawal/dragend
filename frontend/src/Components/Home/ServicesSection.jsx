@@ -1,21 +1,17 @@
-import apiVideo from "../../media/api.mp4";
-import dbVideo from "../../media/db.mp4";
-import agentVideo from "../../media/agent.mp4";
-
 const services = [
   {
     title: "REST APIs",
-    video: apiVideo,
+    video: import.meta.env.VITE_API_VIDEO_URL,
   },
   {
     title: "AI Agent",
-    video: agentVideo,
+    video: import.meta.env.VITE_ROBO_VIDEO_URL,
   },
   {
     title: "Database Management",
-    video: dbVideo,
+    video: import.meta.env.VITE_DB_VIDEO_URL,
   },
-  
+
 ];
 
 

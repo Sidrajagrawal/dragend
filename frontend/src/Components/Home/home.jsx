@@ -1,4 +1,3 @@
-import bgVideo from "../../media/bg_video.mp4";
 import Navbar from "../Navbar/Navbar";
 import AboutSection from "./AboutSection";
 import Footer from "./Footer";
@@ -9,7 +8,7 @@ import { ServicesSection } from "./ServicesSection";
 const Home = () => {
     return (
         <div className="grid h-screen w-full">
-            <video className="col-start-1 row-start-1 h-full w-full object-cover" src={bgVideo} autoPlay loop muted playsInline />
+            <video className="col-start-1 row-start-1 h-full w-full object-cover" src={import.meta.env.VITE_BG_VIDEO_URL} autoPlay loop muted playsInline />
         <div className="col-start-1 row-start-1 z-10 h-[12vh] text-black">
                 <Navbar />
                 <HeroSection/>
