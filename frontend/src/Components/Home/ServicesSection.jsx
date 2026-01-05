@@ -21,10 +21,10 @@ const ServicesSection = () => {
 
       {/* Heading */}
       <div className="text-center max-w-3xl mx-auto">
-        <h2 className="text-5xl font-semibold text-black">
+        <h2 className="text-3xl sm:text-5xl font-semibold text-black">
           Services
         </h2>
-        <p className="mt-4 text-lg text-gray-500">
+        <p className="mt-4 text-base sm:text-lg text-gray-500 px-4 sm:px-0">
           Everything you need to design, deploy, and scale your backend —
           visually.
         </p>
@@ -56,7 +56,7 @@ const ServiceCard = ({ title, video }) => {
           loop
           muted
           playsInline
-          className="h-90 w-full object-cover"
+          className="h-[220px] sm:h-[280px] lg:h-90 w-full object-cover"
         />
 
         {/* Bottom fade for media */}
