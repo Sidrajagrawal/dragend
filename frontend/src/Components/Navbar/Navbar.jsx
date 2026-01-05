@@ -1,8 +1,10 @@
+import logo from '../../media/logo.png'
 const Navbar = () => {
   return (
     <div className="h-full flex mt-7">
-      <div className="left w-[30%] ml-[15%] mt-[1.5%] text-3xl font-medium">
-        Dragend
+      <div className="left w-[30%] ml-[15%] text-3xl font-medium flex">
+        <img src={logo} alt="" width={'80px'}/>
+        <div className='mt-[5%]'>Dragend</div>
       </div>
       <div className="right w-[40%]">
         <ul className="text-lg flex justify-evenly font-medium cursor-pointer ">
