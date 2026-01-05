@@ -18,7 +18,7 @@ const services = [
 const ServicesSection = () => {
   return (
     <section className="w-full bg-white py-24">
-      
+
       {/* Heading */}
       <div className="text-center max-w-3xl mx-auto">
         <h2 className="text-3xl sm:text-5xl font-semibold text-black">
@@ -96,4 +96,4 @@ export default ServiceCard;
 
 
 
-export {ServicesSection};
+export { ServicesSection };
