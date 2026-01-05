@@ -8,13 +8,14 @@ const services = [
     video: apiVideo,
   },
   {
-    title: "Database Management",
-    video: dbVideo,
-  },
-  {
     title: "AI Agent",
     video: agentVideo,
   },
+  {
+    title: "Database Management",
+    video: dbVideo,
+  },
+  
 ];
 
 
@@ -83,7 +84,7 @@ const ServiceCard = ({ title, video }) => {
             mt-6 px-9 py-3.5 rounded-2xl
             bg-[#0b1220] text-white text-sm font-medium
             transition-all duration-300 cursor-pointer
-            hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-500
+            hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500
           "
         >
           Explore now
