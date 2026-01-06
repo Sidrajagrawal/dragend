@@ -1,13 +1,15 @@
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50">
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="text-2xl sm:text-3xl font-medium text-black">
+        <div onClick={() => navigate('/')} className="text-2xl sm:text-3xl font-medium text-black cursor-pointer" >
           Dragend
         </div>
 
@@ -24,14 +26,7 @@ const Navbar = () => {
             About
           </li>
 
-          <li
-            className="
-            cursor-pointer text-black
-            hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500
-            hover:bg-clip-text hover:text-transparent
-            transition-all duration-300
-          "
-          >
+          <li onClick={() =>  navigate('/contact')} className="cursor-pointer text-black hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500 hover:bg-clip-text hover:text-transparent transition-all duration-300 ">
             Contact
           </li>
 
