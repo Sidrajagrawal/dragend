@@ -9,7 +9,7 @@ const services = [
   },
   {
     title: "Database Management",
-    video: import.meta.env.VITE_DB_VIDEO_URLL,
+    video: import.meta.env.VITE_DB_VIDEO_URL,
   },
 
 ];
