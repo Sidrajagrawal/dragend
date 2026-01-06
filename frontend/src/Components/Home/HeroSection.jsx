@@ -3,9 +3,9 @@ const HeroSection = () => {
     <section className="relative h-screen w-full overflow-hidden">
 
       {/* Hero content area */}
-      <div className="h-[76vh] flex items-center">
-        <div className="ml-[15%] max-w-140 z-10">
-          <h1 className="text-[64px] leading-[1.1] font-semibold text-black">
+      <div className="min-h-[70vh] flex mt-[10%] items-center md:w-[70%] px-6 sm:px-10 lg:px-0">
+        <div className="lg:ml-[15%] max-w-140 z-10">
+          <h1 className="text-4xl sm:text-5xl lg:text-[64px] leading-[1.1] font-semibold text-black">
             Build Backends.
             <br />
             Drag. Drop.
@@ -13,7 +13,7 @@ const HeroSection = () => {
             Deploy.
           </h1>
 
-          <p className="mt-6 text-lg text-gray-600 max-w-115">
+          <p className="mt-6 text-base sm:text-lg text-gray-600 max-w-115">
             Dragend lets you create production-ready backends using a visual
             drag-and-drop workflow. No boilerplate. No setup hell. Just ship.
           </p>
