@@ -1,3 +1,4 @@
+import bgVideo from "../../media/bg_video.mp4";
 const AboutSection = () => {
   return (
     <section
