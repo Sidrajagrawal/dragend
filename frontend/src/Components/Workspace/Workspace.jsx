@@ -5,7 +5,7 @@ import CustomControls from './Custom_Controls';
 
 function Workspace() {
   return (
-    <div className="h-screen w-screen flex bg-[#1B1B1B]">
+    <div className="h-screen w-screen flex bg-[#1B1B1B] overflow-hidden">
       <LeftSidebar />
       <div className="flex-1 bg-[#1B1B1B]">
         <ReactFlow>
