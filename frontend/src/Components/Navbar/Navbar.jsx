@@ -43,6 +43,7 @@ const Navbar = () => {
                 hover:bg-linear-to-r hover:from-purple-700 hover:to-pink-600
                 hover:text-white
                 transition-all duration-500
+                cursor-pointer
               "
             >
               Get Started

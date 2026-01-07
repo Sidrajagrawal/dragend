@@ -3,7 +3,7 @@ const HeroSection = () => {
     <section className="relative h-screen w-full overflow-hidden">
 
       {/* Hero content area */}
-      <div className="min-h-[70vh] flex items-center px-6 sm:px-10 lg:px-0">
+      <div className="min-h-[90vh] flex items-center px-6 sm:px-10 lg:px-0">
         <div className="lg:ml-[15%] max-w-140 z-10">
           <h1 className="text-4xl
 +   sm:text-5xl
