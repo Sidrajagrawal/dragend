@@ -9,7 +9,7 @@ function Workspace() {
   const [activePanel, setActivePanel] = useState(null);
 
   return (
-    <div className="h-screen w-screen flex bg-[#1B1B1B]">
+    <div className="h-screen w-screen flex bg-[#1B1B1B] overflow-hidden">
       <LeftSidebar activePanel={activePanel} setActivePanel={setActivePanel} />
 
       {/* Flyout Panel */}

@@ -5,6 +5,9 @@ import Home from './Components/Home/Home'
 import Contact from './Components/Contact/Contact'
 import Footer from './Components/Home/Footer';
 import Workspace from './Components/Workspace/Workspace';
+import { Header } from './Components/layout/Header';
+import { DragEndCreateFlow } from './Components/CreateProject/flow/DragendCreateFlow';
+
 
 function App() {
 
@@ -14,6 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/workspace" element={<Workspace />} />
+        <Route path="/new" element={<DragEndCreateFlow />} />
       </Routes>
     </Router>
   )

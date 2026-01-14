@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import Main_logo from '../../media/Main_logo.png';
+// import logo from '../../media/logo.png';
 import logo from '../../media/logo.png';
-import best_logo from '../../media/best_logo.png';
-import Logo_gif from '../../media/Logo_gif.webm'
+// import best_logo from '../../media/best_logo.png';
+import Logo_gif from '../../media/logo_gif.mp4'
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
