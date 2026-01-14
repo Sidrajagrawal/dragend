@@ -1,7 +1,7 @@
 import { Files, GitBranch, Database, Settings, Workflow } from "lucide-react";
 
 const items = [
-    { id: "explorer", icon: Files, label: "File Explorer" },
+    // { id: "explorer", icon: Files, label: "File Explorer" },
     { id: "db", icon: Database, label: "Database" },
     { id: "workflow", icon: Workflow, label: "Workflow" },
     { id: "git", icon: GitBranch, label: "Version Control" },
