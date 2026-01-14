@@ -13,11 +13,11 @@ function SchemaForm({ onClose, onSave }) {
   };
   return (
     <ModalPortal>
-      <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+      <div className="fixed inset-0  bg-black/50 backdrop-blur-sm flex items-center justify-center">
         <div className="bg-white text-black rounded-xl w-[420px] p-5 shadow-2xl">
           <h2 className="text-sm font-semibold mb-4">Add Field</h2>
           <div className="flex flex-col gap-3">
-            <input placeholder="Field name" className="border px-3 py-2 text-sm rounded outline-none" value={field.name} onChange={(e) => setField({ ...field, name: e.target.value }) } />
+            <input placeholder="Field name" className="border px-3 py-2 text-sm rounded outline-none" value={field.name} onChange={(e) => setField({ ...field, name: e.target.value })} />
             <select className="border px-3 py-2 text-sm rounded outline-none" value={field.type} onChange={(e) => setField({ ...field, type: e.target.value })}>
               <option value="string">String</option>
               <option value="number">Number</option>

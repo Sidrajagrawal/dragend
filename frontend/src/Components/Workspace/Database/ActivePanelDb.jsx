@@ -14,10 +14,10 @@ function ActivePanelDb() {
       <div
         draggable
         onDragStart={onDragStart}
-        className="flex items-center gap-2 p-3 rounded-lg cursor-grab bg-[#2a2d2e] hover:bg-[#3a3d3e]"
+        className="flex justify-center gap-2 p-3 rounded-lg cursor-grab bg-[#2a2d2e] hover:bg-[#3a3d3e]"
       >
         <Database size={20} />
-        <span className="text-sm">Database</span>
+        <span className="text-sm">New Schema</span>
       </div>
     </div>
   );
