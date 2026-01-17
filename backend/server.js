@@ -3,7 +3,7 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const indexRoute = require('./routes/index');
-const connectDB = require('./models/index')
+const connectDB = require('./models/index');
 
 require('dotenv').config()
 const PORT = process.env.PORT || 8080;

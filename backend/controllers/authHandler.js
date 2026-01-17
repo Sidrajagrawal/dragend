@@ -191,6 +191,20 @@ async function createPasswordHandler(req, res) {
         return res.status(500).send({ msg: "Server error.", error: err.message });
     }
 }
+async function deleteHandler(req, res){
+    const id = req.params.username;
+    try {
+        const user = await User.findOne({
+          username: id
+        });
+        if (!user) return res.status(404).json({ msg: "Not found" });
+        await user.deleteOne();
+        res.json({ success: true, msg: "User deleted" });
+    }catch(e){
+        res.status(500).json({ msg: "Delete failed" });
+    }
+
+}
 
 module.exports.createPasswordHandler = createPasswordHandler
 module.exports.loginHandler = loginHandler;
@@ -199,3 +213,4 @@ module.exports.forgetPasswordHandler = forgetPasswordHandler;
 module.exports.verifyOtpHandler = verifyOtpHandler;
 module.exports.profileHandler = profileHandler;
 module.exports.logoutHandler = logoutHandler;
+module.exports.deleteHandler = deleteHandler;
