@@ -1,4 +1,12 @@
-import {ReactFlow, Background, BackgroundVariant, useNodesState, useEdgesState, Panel, ConnectionLineType, addEdge
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  useNodesState,
+  useEdgesState,
+  Panel,
+  ConnectionLineType,
+  addEdge
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import toast, { Toaster } from 'react-hot-toast';
@@ -8,14 +16,17 @@ import FlyoutPanel from './FlyoutPanel';
 import CustomControls from './Custom_Controls';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import TableRefNode from './Nodes/TableRefNode';
 import DbNode from './Nodes/DbNode';
 import ApiNode from './Nodes/ApiNode';
+import { SchemaProvider } from './SchemaContext';
 import { saveWorkflowData } from './WorkflowAPI';
 import { useUndoRedo } from './useUndoRedo';
-
+import FieldSelectionModal from './FieldSelectionModal';
 const nodeTypes = {
   dbNode: DbNode,
   apiNode: ApiNode,
+  tableRefNode: TableRefNode,
 };
 
 function Workspace() {
@@ -23,46 +34,40 @@ function Workspace() {
   const [activePanel, setActivePanel] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [modalConfig, setModalConfig] = useState({ 
+    isOpen: false, 
+    params: null, 
+    schema: null, 
+    apiMethod: '' 
+  });
+
   const { undo, redo, takeSnapshot } = useUndoRedo({
     nodes, setNodes, edges, setEdges
   });
+
+  // --- 1. Validation Logic (Simplified for Node-to-Node) ---
   const getValidationError = useCallback((params) => {
     const sourceNode = nodes.find((n) => n.id === params.source);
     const targetNode = nodes.find((n) => n.id === params.target);
 
     if (!sourceNode || !targetNode) return "Invalid Connection!";
-
-    if (params.source === params.target) {
-      return "Cannot connect a node to itself.";
-    }
+    if (params.source === params.target) return "Cannot connect a node to itself.";
 
     const isSourceApi = sourceNode.type === 'apiNode';
     const isTargetApi = targetNode.type === 'apiNode';
-    const isSourceDb = sourceNode.type === 'dbNode';
-    const isTargetDb = targetNode.type === 'dbNode';
+    const isSourceDb = sourceNode.type === 'dbNode' || sourceNode.type === 'tableRefNode';
+    const isTargetDb = targetNode.type === 'dbNode' || targetNode.type === 'tableRefNode';
 
-    if (isSourceApi && isTargetApi) {
-      return "Workflow Error: Cannot connect two API endpoints directly.";
-    }
+    // Rule: API cannot connect to API
+    if (isSourceApi && isTargetApi) return "Workflow Error: Cannot connect two API endpoints directly.";
 
-    if (isSourceDb && isTargetDb) {
-      const sourceFieldName = params.sourceHandle?.replace("-source", "");
-      const targetFieldName = params.targetHandle?.replace("-target", "");
+    // Rule: Table cannot connect to Table (for this specific builder logic)
+    if (isSourceDb && isTargetDb) return "Workflow Error: Cannot connect two Tables directly.";
 
-      const sourceField = sourceNode.data.fields?.find((f) => f.name === sourceFieldName);
-      const targetField = targetNode.data.fields?.find((f) => f.name === targetFieldName);
-
-      if (sourceField && targetField) {
-        if (sourceField.type !== targetField.type) {
-          return `Type Mismatch: Cannot connect '${sourceField.type}' to '${targetField.type}'.`;
-        }
-      }
-    }
+    // Rule: Check for Duplicates
     const existingEdge = edges.find((e) =>
       e.source === params.source &&
-      e.target === params.target &&
-      e.sourceHandle === params.sourceHandle &&
-      e.targetHandle === params.targetHandle
+      e.target === params.target
     );
 
     if (existingEdge) {
@@ -70,8 +75,9 @@ function Workspace() {
     }
 
     return null;
-  }, [nodes]);
+  }, [nodes, edges]);
 
+  // --- 2. Connection Handler (Triggers Modal) ---
   const onConnect = useCallback(
     (params) => {
       const error = getValidationError(params);
@@ -82,20 +88,53 @@ function Workspace() {
         return;
       }
 
-      takeSnapshot();
-      setEdges((eds) => addEdge(params, eds));
-      toast.success("Connection Linked", {
-        icon: <Link />,
-        style: {
-          background: '#333',
-          color: '#fff',
-          border: '1px solid #22c55e'
-        }
+      // Instead of adding edge immediately, OPEN MODAL
+      const sourceNode = nodes.find((n) => n.id === params.source);
+      const targetNode = nodes.find((n) => n.id === params.target);
+
+      setModalConfig({
+        isOpen: true,
+        params: params,
+        schema: sourceNode.data, // Pass schema fields to modal
+        apiMethod: targetNode.data.method // Pass API method (GET/POST) for context
       });
     },
-    [setEdges, takeSnapshot, getValidationError],
+    [nodes, edges, getValidationError],
   );
 
+  // --- 3. Modal Save Handler (Finalizes Connection) ---
+  const onModalSave = (selectedFields) => {
+    if (selectedFields.length === 0) {
+        toast.error("Please select at least one field.");
+        return;
+    }
+
+    const { params } = modalConfig;
+    takeSnapshot();
+
+    // Create the edge with the selected fields stored in 'data'
+    const newEdge = {
+        ...params,
+        id: `e${params.source}-${params.target}`,
+        animated: true,
+        data: { selectedFields: selectedFields }, 
+        label: `${selectedFields.length} Fields`, // Visual label on the line
+        labelStyle: { fill: '#a855f7', fontWeight: 700, fontSize: 10 },
+        style: { stroke: '#a855f7', strokeWidth: 2 }
+    };
+
+    setEdges((eds) => addEdge(newEdge, eds));
+    
+    toast.success("Linked Successfully", {
+        icon: <Link size={16} />,
+        style: { background: '#333', color: '#fff', border: '1px solid #22c55e' }
+    });
+
+    // Close Modal
+    setModalConfig({ isOpen: false, params: null, schema: null, apiMethod: '' });
+  };
+
+  // --- 4. Save Workflow (Parses Edge Data) ---
   const onSave = useCallback(() => {
     const nodeLookup = nodes.reduce((acc, node) => {
       acc[node.id] = node.data;
@@ -107,17 +146,15 @@ function Workspace() {
       const targetNodeData = nodeLookup[edge.target];
       if (!sourceNodeData || !targetNodeData) return null;
 
-      const sourceLabel = sourceNodeData.tableName || `${sourceNodeData.method} ${sourceNodeData.route || ''}`;
-      const targetLabel = targetNodeData.tableName || `${targetNodeData.method} ${targetNodeData.route || ''}`;
-      const sourceHandle = edge.sourceHandle?.replace("-source", "") || "";
-      const targetHandle = edge.targetHandle?.replace("-target", "") || "";
+      const sourceLabel = sourceNodeData.tableName || "Unknown Table";
+      const targetLabel = `${targetNodeData.method} ${targetNodeData.route || ''}`;
 
       return {
         summary: `${sourceLabel} -> ${targetLabel}`,
         source: sourceLabel,
         target: targetLabel,
-        sourceHandle: sourceHandle,
-        targetHandle: targetHandle
+        // CRITICAL: We now get fields from edge.data, not handles
+        fields: edge.data?.selectedFields || [] 
       };
     }).filter(Boolean);
 
@@ -144,6 +181,7 @@ function Workspace() {
   const onPreview = useCallback(() => navigate('/preview'), [navigate]);
   const onDragOver = useCallback((event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }, []);
 
+  // --- 5. Drop Handler ---
   const onDrop = useCallback((event) => {
     event.preventDefault();
     takeSnapshot();
@@ -161,10 +199,18 @@ function Workspace() {
     };
 
     let initialData = { takeSnapshot };
+
     if (data.type === 'dbNode') {
       initialData = { ...initialData, tableName: "New Table", fields: [] };
     } else if (data.type === 'apiNode') {
       initialData = { ...initialData, method: data.method, route: "" };
+    } else if (data.type === 'tableRefNode') {
+      // Logic for dropping a Saved Schema from the sidebar
+      initialData = {
+        ...initialData,
+        tableName: data.schema.tableName,
+        fields: data.schema.fields
+      };
     }
 
     const newNode = {
@@ -182,42 +228,57 @@ function Workspace() {
   }, [takeSnapshot]);
 
   return (
-    <div className="h-screen w-screen bg-[#1B1B1B] relative overflow-hidden">
-      <Toaster position="bottom-right" />
-      <div className="absolute top-0 left-0 h-full z-50 flex items-center pointer-events-none">
-        <div className="pointer-events-auto">
-          <LeftSidebar activePanel={activePanel} setActivePanel={setActivePanel} />
+    <SchemaProvider>
+      <div className="h-screen w-screen bg-[#1B1B1B] relative overflow-hidden">
+        <Toaster position="bottom-right" />
+        
+        {/* Field Selection Modal */}
+        {modalConfig.isOpen && (
+             <FieldSelectionModal 
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                onSave={onModalSave}
+                schema={modalConfig.schema}
+                apiMethod={modalConfig.apiMethod}
+             />
+        )}
+
+        <div className="absolute top-0 left-0 h-full z-50 flex items-center pointer-events-none">
+          <div className="pointer-events-auto">
+            <LeftSidebar activePanel={activePanel} setActivePanel={setActivePanel} />
+          </div>
+          <div className="pointer-events-auto ml-2">
+            {activePanel && <FlyoutPanel activePanel={activePanel} />}
+          </div>
         </div>
-        <div className="pointer-events-auto ml-2">
-          {activePanel && <FlyoutPanel activePanel={activePanel} />}
+        <div className="w-full h-full">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            onNodeDragStart={onNodeDragStart}
+            connectionLineType={ConnectionLineType.SmoothStep}
+            fitView
+          >
+            <Background variant={BackgroundVariant.Dots} gap={60} className='bg-[#1B1B1B]' />
+            <Panel position="top-right">
+              <div className="flex gap-3 m-4">
+                <button onClick={onSave} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md font-medium text-sm">
+                  Save Flow
+                </button>
+              </div>
+            </Panel>
+            <CustomControls onUndo={undo} onRedo={redo} />
+          </ReactFlow>
         </div>
       </div>
-      <div className="w-full h-full">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          onNodeDragStart={onNodeDragStart}
-          connectionLineType={ConnectionLineType.SmoothStep}
-          fitView
-        >
-          <Background variant={BackgroundVariant.Dots} gap={60} className='bg-[#1B1B1B]' />
-          <Panel position="top-right">
-            <div className="flex gap-3 m-4">
-              <button onClick={onSave} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md font-medium text-sm">
-                Save Flow
-              </button>
-            </div>
-          </Panel>
-          <CustomControls onUndo={undo} onRedo={redo} />
-        </ReactFlow>
-      </div>
-    </div>
+    </SchemaProvider>
   );
 }
+
 export default Workspace;
