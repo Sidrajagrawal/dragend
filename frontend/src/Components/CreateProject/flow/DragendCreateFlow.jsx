@@ -7,7 +7,7 @@ import { StepDatabase } from "../form/StepDatabase";
 import { StepConnect } from "../form/StepConnect";
 import { StepBehavior } from "../form/StepBehavior";
 import { StepIdentity } from "../form/StepIndentity";
-import{ CreateProjectAPI } from '../CreateProjectAPI';
+import { CreateProjectAPI } from "../CreateProjectAPI";
 import { useNavigate } from "react-router-dom";
 import { MiniBot } from "../../bot/MiniBot";
 
@@ -24,30 +24,39 @@ export function DragEndCreateFlow() {
     description: "",
     backend: "",
     dbType: "",
+
+    authType: "",
+
     connectionName: "",
-    dbHost: "",
-    dbPort: "",
-    dbName: "",
-    dbUser: "",
-    dbPass: "",
+    serviceName: "",
+    host: "",
+    port: "",
+    uri: "",
+    endpoint: "",
+    username: "",
+    password: "",
+    apiKey: "",
   });
 
   const update = (k, v) => {
     setFormData((p) => ({ ...p, [k]: v }));
     setErrors((e) => ({ ...e, [k]: null }));
   };
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    console.log(formData);
     setLoading(true);
-    try{
-      const res = CreateProjectAPI(formData);
-      if(res.status == 200){
+    try {
+      const res = await CreateProjectAPI(formData);
+      if (res.success) {
         setLoading(false);
-        navigate('/workspace');
+        console.log("done");
+        navigate("/workspace");
       }
-    }catch (err){
+    } catch (err) {
       console.log(err);
+      console.log(err.msg);
     }
-  }
+  };
 
   const validateStep = () => {
     const e = {};
@@ -57,11 +66,28 @@ export function DragEndCreateFlow() {
     if (step === 2) {
       if (!formData.backend) e.backend = "Select backend.";
     }
-    if (step === 3 && !formData.dbType) e.dbType = "Select DB.";
+    if (step === 3) {
+      if (!formData.dbType) e.dbType = "Select database!";
+      if (!formData.authType)
+        e.authType = "Please specify Authentication type for connection";
+    }
     if (step === 4) {
-      if (!formData.dbHost) e.dbHost = "Host required.";
-      if (!formData.dbUser) e.dbUser = "User required.";
-      if (!formData.dbPass) e.dbPass = "Password required.";
+      if (!formData.connectionName) e.connectionName = "Required";
+
+      if (formData.authType === "uri") {
+        if (!formData.uri) e.uri = "URI required";
+      }
+
+      if (formData.authType === "credentials") {
+        if (!formData.uri) e.uri = "URI required";
+        if (!formData.username) e.username = "Username required";
+        if (!formData.password) e.password = "Password required";
+      }
+
+      if (formData.authType === "apiKey") {
+        if (!formData.endpoint) e.endpoint = "Endpoint required";
+        if (!formData.apiKey) e.apiKey = "API key required";
+      }
     }
 
     setErrors(e);
@@ -73,7 +99,7 @@ export function DragEndCreateFlow() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-        <Header /> 
+      <Header />
       <div className="absolute inset-0 z-0">
         <video
           src={import.meta.env.VITE_BG_VIDEO_URL}
@@ -115,7 +141,7 @@ export function DragEndCreateFlow() {
                     <span className="text-sm font-medium">{label}</span>
                   </div>
                 );
-              }
+              },
             )}
           </div>
 
@@ -165,18 +191,22 @@ export function DragEndCreateFlow() {
               <ArrowLeft size={16} /> Back
             </button>
 
-            {step < 5 && <button
-              onClick={next}
-              className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
-            >
-              Continue <ArrowRight size={16} className="inline ml-1" />
-            </button>}
-            {step == 5 && <button
-              onClick={handleSubmit}
-              className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
-            >
-              Continue <ArrowRight size={16} className="inline ml-1" />
-            </button>}
+            {step < 5 && (
+              <button
+                onClick={next}
+                className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
+              >
+                Continue <ArrowRight size={16} className="inline ml-1" />
+              </button>
+            )}
+            {step == 5 && (
+              <button
+                onClick={handleSubmit}
+                className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
+              >
+                Submit <ArrowRight size={16} className="inline ml-1" />
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -1,32 +1,28 @@
 import { SelectionCard } from "./SelectionCard";
 import { Globe, Server } from "lucide-react";
 
-// const FRONTENDS = ["React", "Vue", "Angular", "Next.js"];
-const BACKENDS = ["Node + Express", "FastAPI", "Django", "Laravel", "Spring Boot"];
+
+const BACKENDS = [
+  { name: "Node + Express", logo: import.meta.env.VITE_NODEJS_LOGO },
+  { name: "FastAPI", logo: import.meta.env.VITE_FASTAPI_LOGO },
+  { name: "Django", logo: import.meta.env.VITE_DJANGO_LOGO },
+  { name: "Laravel", logo: import.meta.env.VITE_LARAVEL_LOGO },
+  { name: "Spring Boot", logo: import.meta.env.VITE_SBOOT_LOGO }
+];
+
 
 export const StepTechStack = ({ formData, update }) => (
   <div className="space-y-6">
-    {/* <h3 className="text-2xl font-semibold">Frontend</h3> */}
-
-    {/* {FRONTENDS.map((f) => (
-      <SelectionCard
-        key={f}
-        title={f}
-        icon={<Globe size={18} />}
-        selected={formData.frontend === f}
-        onClick={() => update("frontend", f)}
-      />
-    ))} */}
 
     <h3 className="text-2xl font-semibold mt-6">Backend</h3>
 
     {BACKENDS.map((b) => (
       <SelectionCard
-        key={b}
-        title={b}
-        icon={<Server size={18} />}
-        selected={formData.backend === b}
-        onClick={() => update("backend", b)}
+        key={b.name}
+        title={b.name}
+        icon={b.logo}
+        selected={formData.backend === b.name}
+        onClick={() => update("backend", b.name)}
       />
     ))}
   </div>
