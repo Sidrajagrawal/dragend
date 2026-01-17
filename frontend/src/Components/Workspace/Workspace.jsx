@@ -1,12 +1,5 @@
 import {
-  ReactFlow,
-  Background,
-  BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  Panel,
-  ConnectionLineType,
-  addEdge
+  ReactFlow, Background, BackgroundVariant, useNodesState, useEdgesState, Panel, ConnectionLineType, addEdge
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import toast, { Toaster } from 'react-hot-toast';
@@ -23,6 +16,7 @@ import { SchemaProvider } from './SchemaContext';
 import { saveWorkflowData } from './WorkflowAPI';
 import { useUndoRedo } from './useUndoRedo';
 import FieldSelectionModal from './FieldSelectionModal';
+
 const nodeTypes = {
   dbNode: DbNode,
   apiNode: ApiNode,
@@ -34,50 +28,38 @@ function Workspace() {
   const [activePanel, setActivePanel] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [modalConfig, setModalConfig] = useState({ 
-    isOpen: false, 
-    params: null, 
-    schema: null, 
-    apiMethod: '' 
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    params: null,
+    schema: null,
+    apiMethod: ''
   });
 
   const { undo, redo, takeSnapshot } = useUndoRedo({
     nodes, setNodes, edges, setEdges
   });
 
-  // --- 1. Validation Logic (Simplified for Node-to-Node) ---
   const getValidationError = useCallback((params) => {
     const sourceNode = nodes.find((n) => n.id === params.source);
     const targetNode = nodes.find((n) => n.id === params.target);
-
     if (!sourceNode || !targetNode) return "Invalid Connection!";
     if (params.source === params.target) return "Cannot connect a node to itself.";
-
     const isSourceApi = sourceNode.type === 'apiNode';
     const isTargetApi = targetNode.type === 'apiNode';
     const isSourceDb = sourceNode.type === 'dbNode' || sourceNode.type === 'tableRefNode';
     const isTargetDb = targetNode.type === 'dbNode' || targetNode.type === 'tableRefNode';
-
-    // Rule: API cannot connect to API
     if (isSourceApi && isTargetApi) return "Workflow Error: Cannot connect two API endpoints directly.";
-
-    // Rule: Table cannot connect to Table (for this specific builder logic)
     if (isSourceDb && isTargetDb) return "Workflow Error: Cannot connect two Tables directly.";
-
-    // Rule: Check for Duplicates
     const existingEdge = edges.find((e) =>
       e.source === params.source &&
       e.target === params.target
     );
-
     if (existingEdge) {
       return "Connection already exists.";
     }
-
     return null;
   }, [nodes, edges]);
-
-  // --- 2. Connection Handler (Triggers Modal) ---
   const onConnect = useCallback(
     (params) => {
       const error = getValidationError(params);
@@ -88,53 +70,43 @@ function Workspace() {
         return;
       }
 
-      // Instead of adding edge immediately, OPEN MODAL
       const sourceNode = nodes.find((n) => n.id === params.source);
       const targetNode = nodes.find((n) => n.id === params.target);
 
       setModalConfig({
         isOpen: true,
         params: params,
-        schema: sourceNode.data, // Pass schema fields to modal
-        apiMethod: targetNode.data.method // Pass API method (GET/POST) for context
+        schema: sourceNode.data,
+        apiMethod: targetNode.data.method
       });
     },
     [nodes, edges, getValidationError],
   );
-
-  // --- 3. Modal Save Handler (Finalizes Connection) ---
   const onModalSave = (selectedFields) => {
     if (selectedFields.length === 0) {
-        toast.error("Please select at least one field.");
-        return;
+      toast.error("Please select at least one field.");
+      return;
     }
-
     const { params } = modalConfig;
     takeSnapshot();
 
-    // Create the edge with the selected fields stored in 'data'
     const newEdge = {
-        ...params,
-        id: `e${params.source}-${params.target}`,
-        animated: true,
-        data: { selectedFields: selectedFields }, 
-        label: `${selectedFields.length} Fields`, // Visual label on the line
-        labelStyle: { fill: '#a855f7', fontWeight: 700, fontSize: 10 },
-        style: { stroke: '#a855f7', strokeWidth: 2 }
+      ...params,
+      id: `e${params.source}-${params.target}`,
+      animated: false,
+      data: { selectedFields: selectedFields },
     };
 
     setEdges((eds) => addEdge(newEdge, eds));
-    
+
     toast.success("Linked Successfully", {
-        icon: <Link size={16} />,
-        style: { background: '#333', color: '#fff', border: '1px solid #22c55e' }
+      icon: <Link size={16} />,
+      style: { background: '#333', color: '#fff', border: '1px solid #22c55e' }
     });
 
-    // Close Modal
     setModalConfig({ isOpen: false, params: null, schema: null, apiMethod: '' });
   };
 
-  // --- 4. Save Workflow (Parses Edge Data) ---
   const onSave = useCallback(() => {
     const nodeLookup = nodes.reduce((acc, node) => {
       acc[node.id] = node.data;
@@ -145,19 +117,15 @@ function Workspace() {
       const sourceNodeData = nodeLookup[edge.source];
       const targetNodeData = nodeLookup[edge.target];
       if (!sourceNodeData || !targetNodeData) return null;
-
       const sourceLabel = sourceNodeData.tableName || "Unknown Table";
       const targetLabel = `${targetNodeData.method} ${targetNodeData.route || ''}`;
-
       return {
         summary: `${sourceLabel} -> ${targetLabel}`,
         source: sourceLabel,
         target: targetLabel,
-        // CRITICAL: We now get fields from edge.data, not handles
-        fields: edge.data?.selectedFields || [] 
+        fields: edge.data?.selectedFields || []
       };
     }).filter(Boolean);
-
     const payload = {
       timestamp: new Date().toISOString(),
       tables: nodes.filter(n => n.type === 'dbNode').map(n => ({
@@ -177,52 +145,41 @@ function Workspace() {
       style: { background: '#333', color: '#fff', border: '1px solid #22c55e' }
     });
   }, [nodes, edges]);
-
   const onPreview = useCallback(() => navigate('/preview'), [navigate]);
   const onDragOver = useCallback((event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }, []);
-
-  // --- 5. Drop Handler ---
   const onDrop = useCallback((event) => {
     event.preventDefault();
     takeSnapshot();
-
     const reactFlowBounds = event.currentTarget.getBoundingClientRect();
     const dataString = event.dataTransfer.getData('application/reactflow');
     if (!dataString) return;
-
     const data = JSON.parse(dataString);
     if (!data?.type) return;
-
     const position = {
       x: event.clientX - reactFlowBounds.left,
       y: event.clientY - reactFlowBounds.top
     };
-
     let initialData = { takeSnapshot };
-
     if (data.type === 'dbNode') {
-      initialData = { ...initialData, tableName: "New Table", fields: [] };
+      initialData = { ...initialData, tableName: "", fields: [] };
     } else if (data.type === 'apiNode') {
       initialData = { ...initialData, method: data.method, route: "" };
     } else if (data.type === 'tableRefNode') {
-      // Logic for dropping a Saved Schema from the sidebar
       initialData = {
         ...initialData,
+        id: data.schema.id,
         tableName: data.schema.tableName,
         fields: data.schema.fields
       };
     }
-
     const newNode = {
       id: `${Date.now()}`,
       type: data.type,
       position,
       data: initialData
     };
-
     setNodes((nds) => nds.concat(newNode));
   }, [setNodes, takeSnapshot]);
-
   const onNodeDragStart = useCallback(() => {
     takeSnapshot();
   }, [takeSnapshot]);
@@ -231,16 +188,10 @@ function Workspace() {
     <SchemaProvider>
       <div className="h-screen w-screen bg-[#1B1B1B] relative overflow-hidden">
         <Toaster position="bottom-right" />
-        
-        {/* Field Selection Modal */}
         {modalConfig.isOpen && (
-             <FieldSelectionModal 
-                isOpen={modalConfig.isOpen}
-                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
-                onSave={onModalSave}
-                schema={modalConfig.schema}
-                apiMethod={modalConfig.apiMethod}
-             />
+          <FieldSelectionModal isOpen={modalConfig.isOpen} onClose={() => setModalConfig({ ...modalConfig, isOpen: false })} onSave={onModalSave} schema={modalConfig.schema}
+            apiMethod={modalConfig.apiMethod}
+          />
         )}
 
         <div className="absolute top-0 left-0 h-full z-50 flex items-center pointer-events-none">
@@ -282,3 +233,7 @@ function Workspace() {
 }
 
 export default Workspace;
+
+
+// #a855f7
+// #E4E6EA

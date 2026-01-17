@@ -1,10 +1,8 @@
 import { createContext, useContext, useState } from "react";
 const SchemaContext = createContext();
 export const useSchema = () => useContext(SchemaContext);
-
 export const SchemaProvider = ({ children }) => {
     const [savedSchemas, setSavedSchemas] = useState([]);
-
     const saveSchema = (schema) => {
         setSavedSchemas((prev) => {
             const exists = prev.find((s) => s.id === schema.id);
@@ -14,10 +12,19 @@ export const SchemaProvider = ({ children }) => {
             return [...prev, schema];
         });
     };
+    const updateSchema = (id, updatedFields) => {
+        setSavedSchemas((prev) =>
+            prev.map((s) => s.id === id ? { ...s, fields: updatedFields } : s)
+        );
+    };
+    const deleteSchema = (id) => {
+        setSavedSchemas((prev) => prev.filter((s) => s.id !== id));
+    }
 
     return (
-        <SchemaContext.Provider value={{ savedSchemas, saveSchema }}>
+        <SchemaContext.Provider value={{ savedSchemas, saveSchema, updateSchema, deleteSchema }}>
             {children}
         </SchemaContext.Provider>
     );
 };
+export default SchemaContext;

@@ -3,9 +3,7 @@ import { X, Check } from "lucide-react";
 import ModalPortal from "../common/ModalPortal"; 
 
 function FieldSelectionModal({ isOpen, onClose, onSave, schema, apiMethod }) {
-  // Initialize with all false or based on previous logic
   const [selectedFields, setSelectedFields] = useState({});
-
   if (!isOpen) return null;
 
   const handleToggle = (fieldName) => {
@@ -28,8 +26,6 @@ function FieldSelectionModal({ isOpen, onClose, onSave, schema, apiMethod }) {
     <ModalPortal>
        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
         <div className="bg-[#202020] text-white rounded-xl w-[400px] shadow-2xl border border-gray-700 overflow-hidden">
-          
-          {/* Header */}
           <div className="px-4 py-3 border-b border-gray-700 flex justify-between items-center bg-[#252525]">
             <div className="flex flex-col">
                 <h2 className="text-sm font-bold text-gray-200">Select Fields</h2>
@@ -41,19 +37,11 @@ function FieldSelectionModal({ isOpen, onClose, onSave, schema, apiMethod }) {
                 <X size={16} />
             </button>
           </div>
-
-          {/* List of Fields */}
           <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
             {schema.fields.map((field) => (
-              <div 
-                key={field.name} 
-                onClick={() => handleToggle(field.name)}
+              <div key={field.name}  onClick={() => handleToggle(field.name)}
                 className={`flex items-center justify-between p-2 mb-1 rounded cursor-pointer border transition-all
-                    ${selectedFields[field.name] 
-                        ? "bg-purple-500/10 border-purple-500/50" 
-                        : "bg-[#2a2a2a] border-transparent hover:border-gray-600"}
-                `}
-              >
+                    ${selectedFields[field.name] ? "bg-purple-500/10 border-purple-500/50"  : "bg-[#2a2a2a] border-transparent hover:border-gray-600"} `} >
                 <div className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors
                         ${selectedFields[field.name] ? "bg-purple-600 border-purple-600" : "border-gray-500"}
@@ -65,8 +53,6 @@ function FieldSelectionModal({ isOpen, onClose, onSave, schema, apiMethod }) {
                         <span className="text-[9px] text-gray-500">{field.type}</span>
                     </div>
                 </div>
-                
-                {/* Key Indicators */}
                 <div className="flex gap-1">
                     {field.constraint === 'primary' && <span className="text-[8px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded">PK</span>}
                     {field.constraint === 'foreign' && <span className="text-[8px] bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded">FK</span>}
@@ -74,8 +60,6 @@ function FieldSelectionModal({ isOpen, onClose, onSave, schema, apiMethod }) {
               </div>
             ))}
           </div>
-
-          {/* Footer */}
           <div className="p-3 border-t border-gray-700 bg-[#252525] flex justify-end gap-2">
             <button onClick={onClose} className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white transition-colors">
                 Cancel

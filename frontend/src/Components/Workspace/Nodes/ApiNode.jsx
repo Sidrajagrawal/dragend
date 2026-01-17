@@ -11,9 +11,7 @@ function ApiNode({ id, data, selected }) {
         PATCH: { bg: "bg-yellow-500", border: "border-yellow-500", shadow: "shadow-yellow-500/20" },
         DELETE: { bg: "bg-red-600", border: "border-red-500", shadow: "shadow-red-500/20" },
     };
-
     const style = colors[data.method] || { bg: "bg-gray-600", border: "border-gray-500", shadow: "shadow-gray-500/20" };
-
     const onRouteChange = useCallback((evt) => {
         updateNodeData(id, { route: evt.target.value });
     }, [id, updateNodeData]);
@@ -24,14 +22,7 @@ function ApiNode({ id, data, selected }) {
 
     return (
         <div className="relative group">
-            <div
-                className={`
-                    flex items-center min-w-[140px] h-[28px] bg-[#1a1a1a] rounded-full 
-                    border transition-all duration-300 ease-in-out overflow-hidden
-                    ${selected ? style.border : "border-[#333] hover:border-gray-500"}
-                    ${selected ? `shadow-md ${style.shadow}` : "shadow-sm"}
-                `}
-            >
+            <div className={`flex items-center min-w-[140px] h-[28px] bg-[#1a1a1a] rounded-full border transition-all duration-300 ease-in-out overflow-hidden ${selected ? style.border : "border-[#333] hover:border-gray-500"} ${selected ? `shadow-md ${style.shadow}` : "shadow-sm"}`} >
                 <div className={`${style.bg} h-full px-2 flex items-center justify-center min-w-[45px]`}>
                     <span className="text-[9px] font-black text-white tracking-wider">
                         {data.method}
@@ -40,30 +31,17 @@ function ApiNode({ id, data, selected }) {
 
                 <div className="flex-1 flex items-center px-2 relative">
                     <span className="text-gray-500 text-[10px] font-mono mr-0.5">/</span>
-                    <input
-                        type="text"
+                    <input type="text"
                         className="nodrag w-full bg-transparent text-gray-200 text-[10px] font-mono outline-none placeholder-gray-600"
                         placeholder="path"
-                        value={data.route || ''}
                         onChange={onRouteChange}
                         onFocus={onFocus}
                     />
                 </div>
             </div>
-            <Handle
-                type="target"
-                position={Position.Left}
-                id="route-target"
-                className="!w-2 !h-2 !bg-[#333] !border !border-gray-500 transition-colors group-hover:!border-white"
-                style={{ left: -3 }}
+            <Handle type="target" position={Position.Left} id="route-target" className="!w-2 !h-2 !bg-[#333] !border !border-gray-500 transition-colors group-hover:!border-white" style={{ left: -3 }}
             />
-            <Handle
-                type="source"
-                position={Position.Right}
-                id="route-source"
-                className={`!w-2 !h-2 !bg-white !border !border-[#1a1a1a] transition-all`}
-                style={{ right: -3 }}
-            />
+            <Handle type="source" position={Position.Right} id="route-source" className={`!w-2 !h-2 !bg-white !border !border-[#1a1a1a] transition-all`} style={{ right: -3 }}/>
         </div>
     );
 }

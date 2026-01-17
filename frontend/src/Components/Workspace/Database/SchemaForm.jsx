@@ -54,10 +54,7 @@ function SchemaForm({ onClose, onSave, initialData }) {
           </div>
 
           <div className="flex justify-end gap-2 mt-5">
-            <button 
-              onClick={onClose} 
-              className="px-3 py-1.5 text-xs font-medium rounded bg-gray-700 hover:bg-gray-600 transition-colors" 
-            >
+            <button onClick={onClose} className="px-3 py-1.5 text-xs font-medium rounded bg-gray-700 hover:bg-gray-600 transition-colors"  >
               Cancel
             </button>
 
