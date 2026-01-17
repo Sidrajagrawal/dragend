@@ -82,7 +82,7 @@ export function DragEndCreateFlow() {
           muted
           className="absolute inset-0 w-full h-full object-cover opacity-60"
         />
-        <div className="absolute inset-0 bg-white/10 backdrop-blur-2xl" />
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-lg" />
       </div>
 
       <div className="relative z-10 container mx-auto min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 p-6">

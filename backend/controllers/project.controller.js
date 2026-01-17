@@ -2,14 +2,7 @@ const crypto = require("../utils/crypto");
 const Project = require("../models/Project");
 const Database = require("../models/Database");
 const DB_config = require("../models/DB_Config");
-
-const {
-  PostgresCheck,
-  MySqlCheck,
-  MongoCheck,
-  SqlServerCheck,
-  OracleCheck
-} = require("../utils/DBConnectionCheck");
+const { PostgresCheck, MySqlCheck, MongoCheck, SqlServerCheck, OracleCheck } = require("../utils/DBConnectionCheck");
 
 exports.createProject = async (req, res) => {
   try {
@@ -20,7 +13,6 @@ exports.createProject = async (req, res) => {
       dbType,
       connectionName,
       authType,
-
       host,
       port,
       uri,
@@ -31,11 +23,9 @@ exports.createProject = async (req, res) => {
       serviceName
     } = req.body;
 
-    const user = req.user?._id || "696b5f88319f75476002782b";
+    const user = req.user._id;
 
-    // 1️⃣ Validate DB Connection BEFORE saving anything
     let checkResult;
-
     if (dbType === "postgresql") {
       checkResult = await PostgresCheck(connectionName, host, port, projectName, username, password);
     }
@@ -66,12 +56,11 @@ exports.createProject = async (req, res) => {
       });
     }
 
-    // 2️⃣ Create Project
-   const project = await Project.create({
-  name: projectName,
-  ownerId: user,
-  description,
-});
+    const project = await Project.create({
+      name: projectName,
+      ownerId: user,
+      description,
+    });
 
     // 3️⃣ Build DB Config Payload
     let configPayload = { authType };
@@ -100,8 +89,9 @@ exports.createProject = async (req, res) => {
 
     // 4️⃣ Save DB Config
     const dbConfig = await DB_config.create({
-      authType:authType,
-      credentials : configPayload});
+      authType: authType,
+      credentials: configPayload
+    });
 
     // 5️⃣ Create Database Record
     const database = await Database.create({
@@ -145,10 +135,10 @@ exports.getProjectById = async (req, res) => {
       _id: req.params.id,
       user: req.user._id
     })
-    .populate({
-      path: "databaseIds",
-      populate: { path: "config" }
-    });
+      .populate({
+        path: "databaseIds",
+        populate: { path: "config" }
+      });
 
     if (!project) return res.status(404).json({ msg: "Project not found" });
 
