@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import Main_logo from '../../media/Main_logo.png';
+// import logo from '../../media/logo.png';
 import logo from '../../media/logo.png';
 import best_logo from '../../media/best_logo.png';
 import Logo_gif from '../../media/Logo_gif.webm'
@@ -48,6 +48,7 @@ const Navbar = () => {
                 hover:bg-linear-to-r hover:from-purple-700 hover:to-pink-600
                 hover:text-white
                 transition-all duration-500
+                cursor-pointer
               "
             >
               Get Started
