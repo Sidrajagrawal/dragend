@@ -4,6 +4,7 @@ import Main_logo from '../../media/Main_logo.png';
 import logo from '../../media/logo.png';
 import best_logo from '../../media/best_logo.png';
 import Logo_gif from '../../media/Logo_gif.webm'
+import Dragend from '../../media/Dragend.svg'
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -15,10 +16,11 @@ const Navbar = () => {
         {/* Logo */}
         <div onClick={() => navigate('/')} className=" flex text-2xl sm:text-3xl font-medium text-black cursor-pointer" >
           {/* <img src={Main_logo} alt="" width={'200px'} /> */}
-          {/* <img src={logo} alt="" width={'80px'} /> */}
+          <img src={logo} alt="" width={'80px'} className="mt-2" />
           {/* <img src={best_logo} alt="" width={'200px'} className=""/> */}
-          <video className="w-50" src={Logo_gif} autoPlay loop muted playsInline />
-        {/* <div className="mt-[10%]">Dragend</div> */}
+          {/* <video className="w-50" src={Logo_gif} autoPlay loop muted playsInline /> */}
+          {/* <div className="mt-[10%]">Dragend</div> */}
+          <img src={Dragend} alt="" width={'150px'} className="mt-4" />
         </div>
 
         {/* Desktop nav */}
