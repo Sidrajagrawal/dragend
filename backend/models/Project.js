@@ -15,12 +15,6 @@ const projectSchema = new mongoose.Schema({
       ref: "User",
       required: true
     },
-   dataSourceIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "DataSource"
-      }
-    ],
     databaseIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
