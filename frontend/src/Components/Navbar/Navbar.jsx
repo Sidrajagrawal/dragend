@@ -16,7 +16,7 @@ const Navbar = () => {
     if (userIsLoggedIn) {
       navigate('/new');
     } else {
-      navigate('/login');
+      navigate('/auth');
     }
   };
 

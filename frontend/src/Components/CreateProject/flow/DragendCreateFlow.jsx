@@ -10,6 +10,7 @@ import { StepIdentity } from "../form/StepIndentity";
 import { CreateProjectAPI } from "../CreateProjectAPI";
 import { useNavigate } from "react-router-dom";
 import { MiniBot } from "../../bot/MiniBot";
+import toast, { Toaster } from 'react-hot-toast';
 
 const STEPS = [1, 2, 3, 4, 5];
 
@@ -24,12 +25,10 @@ export function DragEndCreateFlow() {
     description: "",
     backend: "",
     dbType: "",
-
     authType: "",
-
     connectionName: "",
     serviceName: "",
-    host: "",
+    host: "localhost", // Default for convenience
     port: "",
     uri: "",
     endpoint: "",
@@ -42,19 +41,22 @@ export function DragEndCreateFlow() {
     setFormData((p) => ({ ...p, [k]: v }));
     setErrors((e) => ({ ...e, [k]: null }));
   };
+
   const handleSubmit = async () => {
-    console.log(formData);
     setLoading(true);
     try {
       const res = await CreateProjectAPI(formData);
       if (res.success) {
         setLoading(false);
-        console.log("done");
-        navigate("/workspace");
+        const newProjectId = res.data.projectId;
+        if (newProjectId) {
+          navigate(`/${newProjectId}/workflow`);
+        } else {
+          toast.error("Project ID not found in response:", res.data);
+        }
       }
     } catch (err) {
-      console.log(err);
-      console.log(err.msg);
+      toast.error(err);
     }
   };
 
@@ -72,14 +74,14 @@ export function DragEndCreateFlow() {
         e.authType = "Please specify Authentication type for connection";
     }
     if (step === 4) {
-      if (!formData.connectionName) e.connectionName = "Required";
+      if (!formData.connectionName) e.connectionName = "Connection Name Required";
 
       if (formData.authType === "uri") {
-        if (!formData.uri) e.uri = "URI required";
+        if (!formData.uri) e.uri = "Database URI required";
       }
-
       if (formData.authType === "credentials") {
-        if (!formData.uri) e.uri = "URI required";
+        if (!formData.host) e.host = "Host is required (e.g., localhost)";
+        if (!formData.port) e.port = "Port is required";
         if (!formData.username) e.username = "Username required";
         if (!formData.password) e.password = "Password required";
       }
@@ -113,7 +115,6 @@ export function DragEndCreateFlow() {
 
       <div className="relative z-10 container mx-auto min-h-screen flex flex-col lg:flex-row items-center justify-center gap-12 p-6">
         <div className="hidden lg:flex flex-col max-w-sm space-y-10">
-          {/* Heading */}
           <h1 className="text-4xl font-bold leading-tight">
             Let’s build your <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
@@ -121,7 +122,6 @@ export function DragEndCreateFlow() {
             </span>
           </h1>
 
-          {/* Step List */}
           <div className="space-y-3">
             {["Identity", "Tech Stack", "Database", "Connect", "Behavior"].map(
               (label, i) => {
@@ -129,14 +129,12 @@ export function DragEndCreateFlow() {
                 return (
                   <div
                     key={label}
-                    className={`flex items-stretch gap-3 ${
-                      step === stepNumber ? "opacity-100" : "opacity-40"
-                    }`}
+                    className={`flex items-stretch gap-3 ${step === stepNumber ? "opacity-100" : "opacity-40"
+                      }`}
                   >
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        step >= stepNumber ? "bg-pink-500" : "bg-gray-300"
-                      }`}
+                      className={`w-2 h-2 rounded-full ${step >= stepNumber ? "bg-pink-500" : "bg-gray-300"
+                        }`}
                     />
                     <span className="text-sm font-medium">{label}</span>
                   </div>
@@ -145,7 +143,6 @@ export function DragEndCreateFlow() {
             )}
           </div>
 
-          {/* Bot */}
           <MiniBot step={step} errors={errors} />
         </div>
 
@@ -199,17 +196,18 @@ export function DragEndCreateFlow() {
                 Continue <ArrowRight size={16} className="inline ml-1" />
               </button>
             )}
-            {step == 5 && (
+            {step === 5 && (
               <button
                 onClick={handleSubmit}
                 className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
               >
-                Submit <ArrowRight size={16} className="inline ml-1" />
+                {loading ? "Creating..." : "Submit"} <ArrowRight size={16} className="inline ml-1" />
               </button>
             )}
           </div>
         </div>
       </div>
+      <Toaster position="bottom-right" />
     </div>
   );
 }

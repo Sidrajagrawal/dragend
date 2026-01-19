@@ -1,11 +1,15 @@
 const crypto = require("../utils/crypto");
 const Project = require("../models/Project");
 const Database = require("../models/Database");
+const Table = require("../models/Table");
+const Endpoint = require("../models/Endpoint");
 const DB_config = require("../models/DB_Config");
 const { PostgresCheck, MySqlCheck, MongoCheck, SqlServerCheck, OracleCheck } = require("../utils/DBConnectionCheck");
 
 exports.createProject = async (req, res) => {
   try {
+    console.log(req.body);
+
     const {
       projectName,
       description,
@@ -27,11 +31,13 @@ exports.createProject = async (req, res) => {
 
     let checkResult;
     if (dbType === "postgresql") {
-      checkResult = await PostgresCheck(connectionName, host, port, projectName, username, password);
+      checkResult = await PostgresCheck(connectionName, host, port, username, password);
     }
 
     if (dbType === "mysql") {
-      checkResult = await MySqlCheck(connectionName, host, port, projectName, username, password);
+      checkResult = await MySqlCheck(connectionName, host, port, username, password);
+      console.log(checkResult);
+
     }
 
     if (dbType === "mongodb") {
@@ -62,7 +68,6 @@ exports.createProject = async (req, res) => {
       description,
     });
 
-    // 3️⃣ Build DB Config Payload
     let configPayload = { authType };
 
     if (authType === "uri") {
@@ -71,12 +76,11 @@ exports.createProject = async (req, res) => {
 
     if (authType === "credentials") {
       configPayload.credentials = {
-        uri,
         host,
         port,
         username,
         password: crypto.encrypt(password),
-        serviceName: dbType === "Oracle" ? serviceName : undefined
+        serviceName: dbType === "Oracle" ? serviceName : ""
       };
     }
 
@@ -86,14 +90,11 @@ exports.createProject = async (req, res) => {
         apiKey: crypto.encrypt(apiKey),
       };
     }
-
-    // 4️⃣ Save DB Config
     const dbConfig = await DB_config.create({
       authType: authType,
-      credentials: configPayload
+      credentials: configPayload.credentials
     });
 
-    // 5️⃣ Create Database Record
     const database = await Database.create({
       projectId: project._id,
       name: connectionName,
@@ -101,7 +102,6 @@ exports.createProject = async (req, res) => {
       config: dbConfig._id,
     });
 
-    // 6️⃣ Attach Database to Project
     project.databaseIds.push(database._id);
     await project.save();
 
@@ -133,17 +133,20 @@ exports.getProjectById = async (req, res) => {
   try {
     const project = await Project.findOne({
       _id: req.params.id,
-      user: req.user._id
-    })
-      .populate({
-        path: "databaseIds",
-        populate: { path: "config" }
-      });
+      ownerId: req.user._id
+    }).populate({
+      path: "databaseIds",
+      populate: { path: "config" }
+    });
 
     if (!project) return res.status(404).json({ msg: "Project not found" });
+    return res.status(200).json({
+      success: true,
+      project: project
+    });
 
-    res.json({ success: true, project });
   } catch (err) {
+    console.error("Get Project Error:", err);
     res.status(500).json({ msg: "Failed to fetch project" });
   }
 };
@@ -170,18 +173,21 @@ exports.deleteProject = async (req, res) => {
   try {
     const project = await Project.findOne({
       _id: req.params.id,
-      user: req.user._id
+      ownerId: req.user._id
     });
 
-    if (!project) return res.status(404).json({ msg: "Not found" });
+    if (!project) return res.status(404).json({ msg: "Project not found" });
 
     await Database.deleteMany({ projectId: project._id });
     await DB_config.deleteMany({ _id: { $in: project.databaseIds } });
+    await Table.deleteMany({ projectId: project._id });     
+    await Endpoint.deleteMany({ projectId: project._id });  
 
     await project.deleteOne();
 
-    res.json({ success: true, msg: "Project deleted" });
+    res.json({ success: true, msg: "Project deleted successfully" });
   } catch (err) {
+    console.error("Delete Error:", err);
     res.status(500).json({ msg: "Delete failed" });
   }
 };
@@ -200,3 +206,68 @@ exports.deleteDatabase = async (req, res) => {
   }
 };
 
+
+exports.saveWorkflow = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { tables, endpoints, canvasState } = req.body;
+
+    const project = await Project.findOne({ _id: projectId, ownerId: req.user._id });
+    if (!project) {
+      return res.status(404).json({ success: false, msg: "Project not found" });
+    }
+
+    const databaseId = project.databaseIds[0];
+    if (!databaseId) {
+      return res.status(400).json({ success: false, msg: "No database linked to this project" });
+    }
+
+
+    await Table.deleteMany({ projectId });
+    await Endpoint.deleteMany({ projectId });
+
+    const tableMap = {};
+    const savedTables = [];
+
+    if (tables && tables.length > 0) {
+      for (const tableData of tables) {
+        const newTable = await Table.create({
+          projectId,
+          databaseId,
+          name: tableData.name,
+          fields: tableData.fields
+        });
+        tableMap[tableData.name] = newTable._id;
+        savedTables.push(newTable);
+      }
+    }
+
+    if (endpoints && endpoints.length > 0) {
+      const endpointDocs = endpoints.map(ep => {
+        const connectedTableId = tableMap[ep.connectedTableName] || null;
+
+        return {
+          projectId,
+          method: ep.method,
+          route: ep.route,
+          connectedTableId: connectedTableId,
+          selectedFields: ep.selectedFields || []
+        };
+      });
+      await Endpoint.insertMany(endpointDocs);
+    }
+
+    project.canvasState = canvasState || { nodes: [], edges: [] };
+    await project.save();
+
+    return res.status(200).json({
+      success: true,
+      msg: "Workflow saved successfully",
+      tables: savedTables.length
+    });
+
+  } catch (err) {
+    console.error("Save Workflow Error:", err);
+    return res.status(500).json({ success: false, msg: "Failed to save workflow" });
+  }
+};

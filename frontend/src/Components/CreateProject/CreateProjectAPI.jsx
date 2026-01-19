@@ -1,25 +1,30 @@
 import axios from 'axios';
+
+const BASE_API = "http://localhost:8080/api";
+
 export async function CreateProjectAPI(data) {
   try {
-    const res = await fetch("http://localhost:8080/api/project/create", {
-      method: "POST",
+    const res = await axios.post(`${BASE_API}/project/create`, data, {
+      withCredentials: true,
       headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include", // IMPORTANT for auth cookies
-      body: JSON.stringify(data)
+        "Content-Type": "application/json" 
+      }
     });
-
-    const result = await res.json();
-
     return {
       status: res.status,
-      success: res.ok,
-      data: result
+      success: true, 
+      data: res.data
     };
 
   } catch (error) {
     console.error("CreateProjectAPI Error:", error);
+    if (error.response) {
+      return {
+        status: error.response.status,
+        success: false,
+        error: error.response.data || error.message
+      };
+    }
     return {
       status: 500,
       success: false,
@@ -27,4 +32,3 @@ export async function CreateProjectAPI(data) {
     };
   }
 }
-

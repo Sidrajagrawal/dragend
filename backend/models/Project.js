@@ -6,33 +6,31 @@ const projectSchema = new mongoose.Schema({
     trim: true,
     required: true
   },
-  description : {
+  description: {
     type: String,
-    default : ""
+    default: ""
   },
   ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  databaseIds: [
+    {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-    databaseIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Database"
-      }
-    ],
-    routeGroupIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "RouteGroup"
-      }
-    ],
-    agentIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Agent"
-      }
-    ]
+      ref: "Database"
+    }
+  ],
+  canvasState: {
+    nodes: { type: Array, default: [] },
+    edges: { type: Array, default: [] },
+  },
+  agentIds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Agent"
+    }
+  ]
 
 }, { timestamps: true });
 
