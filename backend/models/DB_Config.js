@@ -11,7 +11,7 @@ const configSchema = new mongoose.Schema({
     uri: {
       type: String,
       required: function () {
-        return this.authType === "uri" || this.authType === "uri";
+        return this.authType === "uri";
       },
     },
 

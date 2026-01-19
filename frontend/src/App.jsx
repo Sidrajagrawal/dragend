@@ -30,7 +30,7 @@ import Footer from './Components/Home/Footer';
 import Workspace from './Components/Workspace/Workspace';
 import { Header } from './Components/layout/Header';
 import { DragEndCreateFlow } from './Components/CreateProject/flow/DragendCreateFlow';
-import Login from './Components/auth/LoginTest';
+import Auth from './Components/auth/Auth';
 
 
 function App() {
@@ -41,7 +41,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/workspace" element={<Workspace />} />
         <Route path="/new" element={<DragEndCreateFlow />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/auth" element={<Auth />} />
       </Routes>
     </Router>
   )
