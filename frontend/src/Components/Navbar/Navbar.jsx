@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-// import logo from '../../media/logo.png';
-// import logo from '../../media/logo.png';
-// import best_logo from '../../media/best_logo.png';
-// import Logo_gif from '../../media/Logo_gif.webm'
-// import Dragend from '../../media/Dragend.svg'
+import logo from '../../media/logo.png';
+import best_logo from '../../media/best_logo.png';
+import Logo_gif from '../../media/Logo_gif.webm'
+import Dragend from '../../media/Dragend.svg'
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  
+  const handleGetStarted = () => {
+    const userIsLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+    if (userIsLoggedIn) {
+      navigate('/new');
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 ">
@@ -42,6 +52,7 @@ const Navbar = () => {
 
           <li>
             <button
+              onClick={handleGetStarted}
               className="
                 px-6 py-3 rounded-2xl
                 bg-white text-black
@@ -69,43 +80,47 @@ const Navbar = () => {
       {open && (
         <div
           className="
-      md:hidden
-      backdrop-blur-xl
-      bg-white/5
-      border-t border-white/5
-      shadow-lg
-    "
+            md:hidden
+            backdrop-blur-xl
+            bg-white/5
+            border-t border-white/5
+            shadow-lg
+          "
         >
           <ul className="flex flex-col items-center gap-6 py-8 text-lg font-medium">
             <li
               className="
-        cursor-pointer text-black
-        hover:bg-linear-to-r hover:from-purple-800 hover:to-pink-900
-        hover:bg-clip-text hover:text-transparent
-        transition-all duration-300
-      "
+                cursor-pointer text-black
+                hover:bg-linear-to-r hover:from-purple-800 hover:to-pink-900
+                hover:bg-clip-text hover:text-transparent
+                transition-all duration-300
+              "
             >
               About
             </li>
 
             <li
               className="
-        cursor-pointer text-black
-        hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500
-        hover:bg-clip-text hover:text-transparent
-        transition-all duration-300
-      "
+                cursor-pointer text-black
+                hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500
+                hover:bg-clip-text hover:text-transparent
+                transition-all duration-300
+              "
             >
               Contact
             </li>
 
             <button
+              onClick={() => {
+                handleGetStarted(); // Use the logic function
+                setOpen(false); // Close menu after clicking
+              }}
               className="
-          mt-4 px-8 py-3 rounded-2xl
-          bg-black/90 text-white
-          hover:bg-linear-to-r hover:from-purple-700 hover:to-pink-600
-          transition-all duration-500
-        "
+                mt-4 px-8 py-3 rounded-2xl
+                bg-black/90 text-white
+                hover:bg-linear-to-r hover:from-purple-700 hover:to-pink-600
+                transition-all duration-500
+              "
             >
               Get Started
             </button>

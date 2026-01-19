@@ -74,13 +74,13 @@ async function SqlServerCheck(host, port, DatabaseName, DBUser, DBpassword) {
   }
 }
 
-async function PostgresCheck(connectionName, host, port, DatabaseName, DBUser, DBpassword) {
+async function PostgresCheck(connectionName, host, port, DBUser, DBpassword) {
     const pool = new Pool({
         host: host === "localhost" ? "127.0.0.1" : host,
         port: Number(port),
         user: DBUser,
         password: DBpassword,
-        database: DatabaseName,
+        database: connectionName,
         ssl: host === "localhost" ? false : { rejectUnauthorized: false },
         connectionTimeoutMillis: 5000
     });
@@ -97,8 +97,9 @@ async function PostgresCheck(connectionName, host, port, DatabaseName, DBUser, D
     }
 }
 
-async function MySqlCheck(connectionName, host, port, DatabaseName, DBUser, DBpassword) {
+async function MySqlCheck(connectionName, host, port, DBUser, DBpassword) {
     let connection;
+    console.log(connectionName);
     
     try {
         connection = await mysql.createConnection({
@@ -106,7 +107,7 @@ async function MySqlCheck(connectionName, host, port, DatabaseName, DBUser, DBpa
             port: Number(port),
             user: DBUser,
             password: DBpassword,
-            database: DatabaseName,
+            database: connectionName,
             connectTimeout: 5000
         });
         return { connect: true, status: 200, msg: "MySQL connected successfully" };

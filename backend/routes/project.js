@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const {
   createProject,
@@ -9,14 +9,19 @@ const {
   updateProject,
   updateDatabaseConfig,
   deleteProject,
-  deleteDatabase
+  deleteDatabase,
+  saveWorkflow
 } = require("../controllers/project.controller");
 
-router.post("/create", auth, createProject);
-router.get("/", auth, getProjects);
-router.get("/:id", auth, getProjectById);
-router.put("/:id", auth, updateProject);
-router.delete("/:id", auth, deleteProject);
-router.delete("/database/:dbId", auth, deleteDatabase);
+router.post("/create", authMiddleware, createProject);
+
+router.get("/", authMiddleware, getProjects);
+router.get("/:id", authMiddleware, getProjectById);
+
+router.put("/:id", authMiddleware, updateProject);
+router.put("/:projectId/workflow", authMiddleware, saveWorkflow);
+
+router.delete("/:id", authMiddleware, deleteProject);
+router.delete("/database/:dbId", authMiddleware, deleteDatabase);
 
 module.exports = router;

@@ -1,25 +1,71 @@
 import { useState } from "react";
 import Lottie from "lottie-react";
-
 import signinLottie from "../../assets/signin.json";
 import signupLottie from "../../assets/signup.json";
-
+import { LoginUserApi, SignUpApi, VerifyOtpApi } from "./AuthAPI";
 import "./Auth.css";
-
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [otpSent, setOtpSent] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [otp, setOtp] = useState("");
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      console.log(email);
+      const response = await LoginUserApi(email, password);
+      setIsLoading(false);
+      alert("Login Successful");
+
+    } catch (error) {
+      alert(error.msg || "Login Failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await SignUpApi(username, email, password, confirmPass);
+      alert(response.msg || "OTP Sent!");
+      setIsVerifying(true);
+    } catch (error) {
+      alert(error.msg || "Signup Failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const response = await VerifyOtpApi(email, otp);
+      alert(response.msg || "Verification Successful! Please Login.");
+      setIsVerifying(false);
+      setIsLogin(true);
+      setOtp("");
+      setPassword("");
+      setConfirmPass("");
+    } catch (error) {
+      alert(error.msg || "Verification Failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="login">
-      {/* Decorative abstract image */}
-      <img
-        src="/assets/auth-bg.avif"
-        alt=""
-        className="auth-bg-image"
-      />
-
       <div className="card">
         {/* NAV */}
         <ul className="card-nav">
@@ -27,18 +73,19 @@ export default function Auth() {
             className="active-bar"
             style={{ top: isLogin ? "8px" : "calc(50% + 8px)" }}
           />
-          <li>
+          <li className="cursor-pointer" onClick={() => {
+            setIsLogin(true);
+            setIsVerifying(false);
+
+          }}>
             <button
               className={isLogin ? "active" : ""}
-              onClick={() => {
-                setIsLogin(true);
-                setOtpSent(false);
-              }}
+
             >
               Sign In
             </button>
           </li>
-          <li>
+          <li onClick={() => setIsLogin(false)} className="cursor-pointer">
             <button
               className={!isLogin ? "active" : ""}
               onClick={() => setIsLogin(false)}
@@ -48,42 +95,34 @@ export default function Auth() {
           </li>
         </ul>
 
-        {/* HERO */}
         <div className="card-hero">
-  <div className="lottie-wrapper">
-    <Lottie
-      animationData={isLogin ? signinLottie : signupLottie}
-      loop
-      autoplay
-      className="hero-lottie"
-      key={isLogin ? "signin" : "signup"}
-    />
-  </div>
+          <div className="lottie-wrapper">
+            <Lottie
+              animationData={isLogin ? signinLottie : signupLottie}
+              loop
+              autoplay
+              className="hero-lottie"
+              key={isLogin ? "signin" : "signup"}
+            />
+          </div>
 
-  <div
-    className="card-hero-inner"
-    style={{
-      transform: isLogin ? "translateY(0)" : "translateY(-50%)",
-    }}
-  >
-    <div className="card-hero-content">
-      <h2>Welcome back</h2>
-      <p>Secure sign in with email and one-time password.</p>
+          <div
+            className="card-hero-inner"
+            style={{
+              transform: isLogin ? "translateY(0)" : "translateY(-50%)",
+            }}
+          >
+            <div className="card-hero-content">
+              <h2>Welcome back</h2>
+              <p>Secure sign in with your email and password.</p>
+            </div>
 
-      
-    </div>
-
-    <div className="card-hero-content">
-      <h2>Create account</h2>
-      <p>Join Dragend and build your backend faster.</p>
-
-      
-    </div>
-  </div>
-</div>
-
-
-        {/* FORMS */}
+            <div className="card-hero-content">
+              <h2>Create account</h2>
+              <p>Join Dragend and build your backend faster.</p>
+            </div>
+          </div>
+        </div>
         <div className="card-form">
           <div
             className="forms"
@@ -91,83 +130,105 @@ export default function Auth() {
               transform: isLogin ? "translateY(0)" : "translateY(-50%)",
             }}
           >
-            {/* SIGN IN */}
-            <form className="auth-form">
-  <h3>Sign In</h3>
+            <form className="auth-form" onSubmit={handleLogin}>
+              <h3>Sign In</h3>
 
-  <input placeholder="Full Name" />
-  <input placeholder="Email Address" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-  {!otpSent && (
-    <button
-      type="button"
-      className="gradient-btn"
-      onClick={() => setOtpSent(true)}
-    >
-      Send OTP
-    </button>
-  )}
+              <button className="gradient-btn" disabled={isLoading}>
+                {isLoading ? "Signing In..." : "Sign In"}
+              </button>
 
-  {otpSent && (
-    <>
-      <input placeholder="Enter OTP" />
-      <button className="gradient-btn">
-        Verify & Sign In
-      </button>
-    </>
-  )}
+              <div className="forgot-row">
+                <button type="button" className="text-link">
+                  Forgot password?
+                </button>
+              </div>
+            </form>
 
-  {/* Forgot password */}
-  <div className="forgot-row">
-    <button type="button" className="text-link">
-      Forgot password?
-    </button>
-  </div>
+            {/* SIGN UP FORM */}
+            <form
+              className="auth-form"
+              onSubmit={isVerifying ? handleVerifyOtp : handleSignup}
+            >
+              <h3>{isVerifying ? "Verify Email" : "Create Account"}</h3>
 
-  <div className="divider" />
+              {!isVerifying ? (
+                // Step 1: Registration Details
+                <>
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPass}
+                    onChange={(e) => setConfirmPass(e.target.value)}
+                    required
+                  />
+                  <button className="gradient-btn" disabled={isLoading}>
+                    {isLoading ? "Creating..." : "Create Account"}
+                  </button>
+                </>
+              ) : (
+                // Step 2: OTP Entry
+                <>
+                  <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+                    We sent a verification code to <strong>{email}</strong>
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    required
+                  />
+                  <button className="gradient-btn" disabled={isLoading}>
+                    {isLoading ? "Verifying..." : "Verify & Register"}
+                  </button>
 
-  {/* Switch */}
-  {/* <div className="switch-row">
-    <span>
-      Don’t have an account?{" "}
-      <button
-        type="button"
-        className="text-link primary"
-        onClick={() => setIsLogin(false)}
-      >
-        Sign up
-      </button>
-    </span>
-  </div> */}
-</form>
-
-
-            {/* SIGN UP */}
-           <form className="auth-form">
-  <h3>Create Account</h3>
-
-  <input placeholder="Full Name" />
-  <input placeholder="Email Address" />
-  <input placeholder="Password" />
-  <input placeholder="Confirm Password" />
-
-  <button className="gradient-btn">Create Account</button>
-
-  {/* Switch to Sign In */}
-  {/* <div className="switch-row">
-    <span>
-      Already have an account?{" "}
-      <button
-        type="button"
-        className="text-link primary"
-        onClick={() => setIsLogin(true)}
-      >
-        Sign in
-      </button>
-    </span>
-  </div> */}
-</form>
-
+                  <button
+                    type="button"
+                    className="text-link"
+                    style={{ marginTop: '10px', fontSize: '12px' }}
+                    onClick={() => setIsVerifying(false)}
+                  >
+                    Go back
+                  </button>
+                </>
+              )}
+            </form>
           </div>
         </div>
       </div>
