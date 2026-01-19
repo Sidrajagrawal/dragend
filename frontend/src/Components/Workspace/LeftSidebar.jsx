@@ -1,9 +1,9 @@
 import { Files, GitBranch, Database, Workflow } from "lucide-react";
-import logo from '../../media/logo.png';
+// import logo from '../../media/logo.png';
 import { useNavigate } from 'react-router-dom';
 
 const items = [
-    { id: "Dragend", icon: logo, label: "Home", isImage: true },
+    // { id: "Dragend", icon: logo, label: "Home", isImage: true },
     { id: "db", icon: Database, label: "Database" },
     { id: "workflow", icon: Workflow, label: "Workflow" },
     { id: "git", icon: GitBranch, label: "Version Control" },
