@@ -11,9 +11,16 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@xyflow/react": "^12.10.0",
+    "lottie-react": "^2.4.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+<<<<<<< HEAD
     "react-router-dom": "^7.11.0"
+=======
+    "react-router-dom": "^7.11.0",
+    "tailwindcss": "^4.1.18"
+>>>>>>> 86ff5ba9dc7aea54d1f5f8dc0c6da515d6d18148
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
