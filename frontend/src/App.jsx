@@ -33,8 +33,11 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './Components/Home/Home'
 import Contact from './Components/Contact/Contact'
-import Workspace from './Components/Workspace/Workspace'
-import Auth from './Components/Auth/Auth'
+import Footer from './Components/Home/Footer';
+import Workspace from './Components/Workspace/Workspace';
+import { Header } from './Components/layout/Header';
+import { DragEndCreateFlow } from './Components/CreateProject/flow/DragendCreateFlow';
+
 
 function App() {
   return (
@@ -43,12 +46,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/workspace" element={<Workspace />} />
-
-        {/* Auth routes */}
-        <Route path="/auth" element={<Auth />} />
-        <Route
-         path="/login" element={<Auth />} />
-        <Route path="/signup" element={<Auth />} />
+        <Route path="/new" element={<DragEndCreateFlow />} />
       </Routes>
     </Router>
   )

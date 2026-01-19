@@ -12,12 +12,12 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@xyflow/react": "^12.10.0",
-    "lottie-react": "^2.4.1",
+    "axios": "^1.13.2",
+    "framer-motion": "^12.26.2",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-<<<<<<< HEAD
-    "react-router-dom": "^7.11.0"
-=======
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.11.0",
     "tailwindcss": "^4.1.18"
 >>>>>>> 86ff5ba9dc7aea54d1f5f8dc0c6da515d6d18148

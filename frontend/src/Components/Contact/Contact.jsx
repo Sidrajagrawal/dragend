@@ -68,7 +68,7 @@ const Contact = () => {
                 className="bg-white/50 border border-gray-200 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all"
               ></textarea>
 
-              <button className="bg-black text-white font-medium py-4 rounded-xl shadow-lg transition-all duration-300 ease-out hover:scale-[1.03] hover:shadow-2xl hover:bg-gray-800 active:scale-95">
+              <button className="bg-black text-white font-medium py-4 rounded-xl shadow-lg transition-all duration-300 ease-out hover:scale-[1.03] hover:shadow-2xl cursor-pointer hover:bg-gray-800 active:scale-95">
                 Send Message
               </button>
             </form>
