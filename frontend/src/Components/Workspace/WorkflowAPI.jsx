@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const BASE_API = "http://localhost:8080/api";
 
-// --- SAVE (PUT) ---
 export const saveWorkflowData = async (projectId, payload) => {
     try {
         const response = await axios.put(
@@ -20,7 +19,6 @@ export const saveWorkflowData = async (projectId, payload) => {
     }
 };
 
-// --- GET (READ) ---
 export const getProjectData = async (projectId) => {
     try {
         const response = await axios.get(
@@ -34,7 +32,6 @@ export const getProjectData = async (projectId) => {
     }
 };
 
-// --- DELETE ---
 export const deleteProjectAPI = async (projectId) => {
     try {
         const response = await axios.delete(
@@ -45,5 +42,40 @@ export const deleteProjectAPI = async (projectId) => {
     } catch (error) {
         console.error("Delete Project Error:", error.response?.data || error.message);
         throw error;
+    }
+};
+
+export const downloadProjectAPI = async (projectId, projectName = 'Project') => {
+    try {
+        const response = await axios.get(
+            `${BASE_API}/project/generate/${projectId}/download`,
+            { 
+                withCredentials: true,
+                responseType: 'blob'
+            }
+        );
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = `${projectName}.zip`;
+        if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (fileNameMatch && fileNameMatch.length === 2) fileName = fileNameMatch[1];
+        }
+
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        return { success: true };
+    } catch (err) {
+        console.error("Download Project Error:", err);
+        throw err;
     }
 };

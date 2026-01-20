@@ -333,7 +333,7 @@ exports.downloadProject = async (req, res) => {
         const content = await zip.generateAsync({ type: "nodebuffer" });
         res.set({
             'Content-Type': 'application/zip',
-            'Content-Disposition': `attachment; filename=${project.name.replace(/\s+/g, '_')}_backend.zip`,
+            'Content-Disposition': `attachment; filename=${project.name.replace(/\s+/g, '_')}.zip`,
             'Content-Length': content.length
         });
         return res.send(content);

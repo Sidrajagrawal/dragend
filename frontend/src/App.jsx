@@ -7,7 +7,7 @@ import Workspace from './Components/Workspace/Workspace';
 import { Header } from './Components/layout/Header';
 import { DragEndCreateFlow } from './Components/CreateProject/flow/DragendCreateFlow';
 import Auth from './Components/Auth/Auth';
-
+import UserGuide from './Components/Workspace/UserGuide';
 
 function App() {
   return (
@@ -18,6 +18,7 @@ function App() {
         <Route path="/:projectId/workflow" element={<Workspace />} />
         <Route path="/new" element={<DragEndCreateFlow />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/user-guide" element={<UserGuide />} />
       </Routes>
     </Router>
   )
