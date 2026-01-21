@@ -41,3 +41,12 @@ export const LoginUserApi = async (email, password) => {
         throw error.response ? error.response.data : { message: "Network Error" };
     }
 };
+
+export const CheckAuth = async () => {
+  try {
+    const res = await api.get("/me", { withCredentials: true });
+    return res.data;
+  } catch (err) {
+    return { authenticated: false };
+  }
+};

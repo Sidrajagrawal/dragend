@@ -2,13 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
-import Lottie from "lottie-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { LoginUserApi, SignUpApi, VerifyOtpApi } from "./AuthAPI";
+import BG_IMAGE from "../../media/login-bg-1.png";
 import "./Auth.css";
-
-// Restored Placeholder Imports
-import signinLottie from "../../assets/signin.json";
-import signupLottie from "../../assets/signup.json";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -17,12 +14,18 @@ export default function Auth() {
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
 
-
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [signupData, setSignupData] = useState({ username: "", email: "", password: "", Cpassword: "" });
+  const [signupData, setSignupData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    Cpassword: "",
+  });
+
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timeLeft, setTimeLeft] = useState(180);
   const [showPass, setShowPass] = useState(false);
+
   const inputRefs = useRef([]);
 
   const handleInput = (e, type) => {
@@ -33,19 +36,19 @@ export default function Auth() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!loginData.email || !loginData.password) return toast.error("Please fill all fields");
+    if (!loginData.email || !loginData.password)
+      return toast.error("Fill all fields");
+
     setLoading(true);
     try {
       const res = await LoginUserApi(loginData.email, loginData.password);
-      if (res.msg === 'Login successfully.' || res.success) {
+      if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
         localStorage.setItem("isLoggedIn", "true");
         setTimeout(() => navigate("/new"), 1000);
-      } else {
-        toast.error(res.message || "Invalid credentials");
-      }
-    } catch (err) {
-      toast.error(err.message || "Login failed");
+      } else toast.error(res.message || "Invalid credentials");
+    } catch {
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }
@@ -54,203 +57,267 @@ export default function Auth() {
   const handleSignup = async (e) => {
     e.preventDefault();
     const { username, email, password, Cpassword } = signupData;
-    if (!username || !email || !password) return toast.error("All fields required");
+
+    if (!username || !email || !password)
+      return toast.error("All fields required");
     if (password !== Cpassword) return toast.error("Passwords do not match");
 
     setLoading(true);
     try {
       const res = await SignUpApi(username, email, password, Cpassword);
       if (res.status === 201) {
-        toast.success("Account created! Check email.");
+        toast.success("Check your email for OTP");
         setShowOtp(true);
         setTimeLeft(180);
       }
-    } catch (err) {
-      toast.error(err.msg || "Signup failed");
+    } catch {
+      toast.error("Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  const handleVerifyOtp = async () => {
     const code = otp.join("");
     if (code.length < 6) return toast.error("Enter full OTP");
+
     setLoading(true);
     try {
       const res = await VerifyOtpApi(signupData.email, code);
       if (res.status === 200) {
         toast.success("Verified! Please login.");
         setShowOtp(false);
-        setIsLogin(true); 
-        setSignupData({ username: "", email: "", password: "", Cpassword: "" }); 
+        setIsLogin(true);
       }
-    } catch (err) {
-      toast.error(err.message || "Verification failed");
+    } catch {
+      toast.error("Verification failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // OTP Input Helpers
-  const handleOtpChange = (element, index) => {
-    if (isNaN(element.value)) return;
+  const handleOtpChange = (el, i) => {
+    if (isNaN(el.value)) return;
     const newOtp = [...otp];
-    newOtp[index] = element.value;
+    newOtp[i] = el.value;
     setOtp(newOtp);
-    if (element.value && index < 5) inputRefs.current[index + 1].focus();
+    if (el.value && i < 5) inputRefs.current[i + 1].focus();
   };
 
-  const handleOtpKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
-
-  // Timer
   useEffect(() => {
     let timer;
-    if (showOtp && timeLeft > 0) timer = setInterval(() => setTimeLeft((p) => p - 1), 1000);
+    if (showOtp && timeLeft > 0) {
+      timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    }
     return () => clearInterval(timer);
   }, [showOtp, timeLeft]);
 
   return (
-    <div className="login">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#b46cff] via-[#ff6cab] to-[#f4dcc2] overflow-hidden">
       <Toaster position="top-center" />
-      <img src="/assets/auth-bg.avif" alt="" className="auth-bg-image" />
 
-      <div className="card">
-        {/* NAV */}
-        <ul className="card-nav">
-          <span
-            className="active-bar"
-            style={{ 
-               top: isLogin ? "8px" : "calc(50% + 8px)" 
-            }}
-          />
-          <li onClick={() => { setIsLogin(true); setShowOtp(false); }}>
-            <button className={isLogin ? "active" : ""}>Sign In</button>
-          </li>
-          <li onClick={() => setIsLogin(false)}>
-            <button className={!isLogin ? "active" : ""}>Sign Up</button>
-          </li>
-        </ul>
+      {/* Glass Container */}
+      <div className="relative w-full flex justify-around max-w-6xl h-auto lg:h-[85vh] rounded-3xl bg-black/50 backdrop-blur-xl shadow-2xl border border-black/30 flex overflow-visible">
+        {/* LEFT - AUTH FORM */}
+        <div className="w-full lg:w-1/2 p-8 sm:p-12 text-white flex flex-col justify-center">
+          <h2 className="text-3xl font-bold mb-2">
+            {isLogin ? "Welcome Back, Builder." : "Start Building in Minutes."}
+          </h2>
+          <p className="text-white/70 mb-8">
+            {isLogin
+              ? "Log in to keep shipping smarter backends."
+              : "Create your account and design without limits."}
+          </p>
 
-        {/* HERO */}
-        <div className="card-hero">
-          
-          {/* === RESTORED LOTTIE PLACEHOLDER === */}
-          <div className="lottie-wrapper">
-            <Lottie
-              animationData={isLogin ? signinLottie : signupLottie}
-              loop
-              autoplay
-              className="hero-lottie"
-              key={isLogin ? "signin" : "signup"}
-            />
-          </div>
+          <AnimatePresence mode="wait">
+            {isLogin ? (
+              <motion.form
+                key="login"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.3 }}
+                onSubmit={handleLogin}
+                className="space-y-5"
+              >
+                <input
+                  name="email"
+                  placeholder="Email"
+                  onChange={(e) => handleInput(e, "login")}
+                  className="w-full px-5 py-4 rounded-full bg-black/60 text-white outline-none placeholder:text-white/50"
+                />
 
-          <div
-            className="card-hero-inner"
-            style={{ transform: isLogin ? "translateY(0)" : "translateY(-50%)" }}
-          >
-            <div className="card-hero-content">
-              <h2>Welcome back</h2>
-              <p>Secure sign in with email and password.</p>
-            </div>
-            <div className="card-hero-content">
-              <h2>Create account</h2>
-              <p>Join Dragend and build your backend faster.</p>
-            </div>
-          </div>
+                <div className="flex items-center bg-black/60 rounded-full px-5">
+                  <input
+                    name="password"
+                    type={showPass ? "text" : "password"}
+                    placeholder="Password"
+                    onChange={(e) => handleInput(e, "login")}
+                    className="w-full py-4 bg-transparent outline-none text-white placeholder:text-white/50"
+                  />
+                  <button type="button" onClick={() => setShowPass(!showPass)}>
+                    {showPass ? <EyeOff /> : <Eye />}
+                  </button>
+                </div>
+
+                <div className="flex justify-between text-sm text-white/70">
+                  <span>Keep me logged in</span>
+                  <span className="cursor-pointer underline">
+                    Forgot Password
+                  </span>
+                </div>
+
+                <button
+                  disabled={loading}
+                  className="w-full py-4 rounded-full font-semibold bg-gradient-to-r from-pink-400 to-orange-300 text-black hover:scale-[1.02] transition"
+                >
+                  {loading ? "Signing In..." : "Sign in"}
+                </button>
+
+                <p className="text-center text-white/70">
+                  Don’t have an account?{" "}
+                  <span
+                    onClick={() => setIsLogin(false)}
+                    className="text-white font-semibold cursor-pointer"
+                  >
+                    Sign up
+                  </span>
+                </p>
+              </motion.form>
+            ) : (
+              <motion.div
+                key="signup"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.3 }}
+              >
+                {!showOtp ? (
+                  <form onSubmit={handleSignup} className="space-y-5">
+                    <input
+                      name="username"
+                      placeholder="Full Name"
+                      onChange={(e) => handleInput(e, "signup")}
+                      className="w-full px-5 py-4 rounded-full bg-black/60 text-white"
+                    />
+
+                    <input
+                      name="email"
+                      placeholder="Email"
+                      onChange={(e) => handleInput(e, "signup")}
+                      className="w-full px-5 py-4 rounded-full bg-black/60 text-white"
+                    />
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input
+                        name="password"
+                        type="password"
+                        placeholder="Password"
+                        onChange={(e) => handleInput(e, "signup")}
+                        className="w-full sm:w-1/2 px-5 py-4 rounded-full bg-black/60 text-white"
+                      />
+
+                      <input
+                        name="Cpassword"
+                        type="password"
+                        placeholder="Confirm"
+                        onChange={(e) => handleInput(e, "signup")}
+                        className="w-full sm:w-1/2 px-5 py-4 rounded-full bg-black/60 text-white"
+                      />
+                    </div>
+
+                    <button className="w-full py-4 rounded-full bg-gradient-to-r from-pink-400 to-orange-300 text-black font-semibold">
+                      {loading ? "Creating..." : "Create Account"}
+                    </button>
+                    <p className="text-center text-white/70">
+                      Already a member?{" "}
+                      <span
+                        onClick={() => {
+                          setIsLogin(true);
+                          setShowOtp(false);
+                        }}
+                        className="text-white font-semibold cursor-pointer"
+                      >
+                        Login
+                      </span>
+                    </p>
+                  </form>
+                ) : (
+                  <div className="text-center">
+                    <h3 className="text-xl mb-4">Verify Your Email</h3>
+
+                    <div className="flex justify-center gap-2 mb-6">
+                      {otp.map((d, i) => (
+                        <input
+                          key={i}
+                          maxLength="1"
+                          ref={(el) => (inputRefs.current[i] = el)}
+                          value={d}
+                          onChange={(e) => handleOtpChange(e.target, i)}
+                          className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-white text-black"
+                        />
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={handleVerifyOtp}
+                      className="w-full py-4 rounded-full bg-gradient-to-r from-pink-400 to-orange-300 text-black font-semibold"
+                    >
+                      Verify Code
+                    </button>
+
+                    <p className="mt-4 text-white/70">
+                      {timeLeft > 0 ? (
+                        `Resend in ${Math.floor(timeLeft / 60)}:${(
+                          timeLeft % 60
+                        )
+                          .toString()
+                          .padStart(2, "0")}`
+                      ) : (
+                        <span
+                          className="cursor-pointer underline"
+                          onClick={() => setTimeLeft(180)}
+                        >
+                          Resend OTP
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* FORMS */}
-        <div className="card-form">
+        {/* RIGHT  */}
+        <div className="hidden lg:flex w-[42%] min-w-[420px] relative p-6 text-white flex-col justify-center">
           <div
-            className="forms"
-            style={{ transform: isLogin ? "translateY(0)" : "translateY(-50%)" }}
+            className="bg-none card h-full p-10 rounded-3xl max-w-md"
+            style={{
+              backgroundImage: `url('${BG_IMAGE}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
           >
-            {/* SIGN IN FORM */}
-            <form className="auth-form" onSubmit={handleLogin}>
-              <h3>Sign In</h3>
-              <input 
-                name="email" 
-                placeholder="Email Address" 
-                onChange={(e) => handleInput(e, "login")} 
-              />
-              <div style={{ position: 'relative' }}>
-                <input 
-                  name="password" 
-                  type={showPass ? "text" : "password"} 
-                  placeholder="Password" 
-                  onChange={(e) => handleInput(e, "login")}
-                  style={{ width: '100%' }}
-                />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="icon-btn">
-                   {showPass ? <EyeOff size={16}/> : <Eye size={16}/>}
-                </button>
-              </div>
-              
-              <button disabled={loading} className="gradient-btn">
-                {loading ? "Signing In..." : "Sign In"}
-              </button>
-              
-              <div className="forgot-row">
-                <button type="button" className="text-link">Forgot password?</button>
-              </div>
-            </form>
+            <h2 className="text-4xl font-bold leading-snug">
+              Design Backends. <br /> Skip the Drama.
+            </h2>
 
-            {/* 2. SIGN UP FORM*/}
-            <div className="auth-form" style={{ display: 'flex', flexDirection: 'column' }}>
-              {!showOtp ? (
-                // Normal Signup
-                <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '18px', height: '100%' }}>
-                   <h3>Create Account</h3>
-                   <input name="username" placeholder="Full Name" onChange={(e) => handleInput(e, "signup")} />
-                   <input name="email" placeholder="Email Address" onChange={(e) => handleInput(e, "signup")} />
-                   <div style={{ display: 'flex', gap: '10px' }}>
-                     <input name="password" type="password" placeholder="Password" onChange={(e) => handleInput(e, "signup")} />
-                     <input name="Cpassword" type="password" placeholder="Confirm" onChange={(e) => handleInput(e, "signup")} />
-                   </div>
-                   <button disabled={loading} className="gradient-btn">
-                     {loading ? "Creating..." : "Create Account"}
-                   </button>
-                </form>
-              ) : (
-                // OTP View
-                <div style={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                   <h3>Verify Email</h3>
-                   <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>Code sent to {signupData.email}</p>
-                   
-                   <div className="flex justify-center gap-2 my-6">
-                     {otp.map((d, i) => (
-                       <input 
-                         key={i} 
-                         value={d} 
-                         maxLength="1"
-                         ref={el => inputRefs.current[i] = el}
-                         onChange={e => handleOtpChange(e.target, i)}
-                         onKeyDown={e => handleOtpKeyDown(e, i)}
-                         className="caret-transparent !w-12 !h-14 !p-0 !text-center !text-xl !font-bold border border-slate-200 rounded-xl bg-slate-50 text-slate-800 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
-                       />
-                     ))}
-                   </div>
+            <p className="mt-6 text-8 text-white/80">
+              “Dragend turns backend chaos into clean, visual workflows — build
+              faster, deploy smarter.”
+            </p>
 
-                   <button onClick={handleVerifyOtp} disabled={loading} className="gradient-btn" style={{ marginTop: '20px' }}>
-                      {loading ? "Verifying..." : "Verify Code"}
-                   </button>
+            <p className="mt-6 font-semibold">Siddharth Raj Agrawal</p>
+            <p className="text-sm text-white/70">Creator of Dragend</p>
+          </div>
 
-                   <div style={{ marginTop: '15px', fontSize: '13px' }}>
-                      {timeLeft > 0 ? (
-                        <span style={{color: '#94a3b8'}}>Resend in {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
-                      ) : (
-                        <button onClick={() => {setTimeLeft(180); toast.success("Sent!")}} className="text-link">Resend Code</button>
-                      )}
-                   </div>
-                </div>
-              )}
-            </div>
+          <div className="absolute card text-black -bottom-6 ml-8 w-92 h-35 p-6 rounded-2xl bg-gradient-to-br from-pink-400 to-purple-200 shadow-2xl">
+            <h4 className="font-bold mb-2">Ship backend faster</h4>
+            <p className="text-sm text-black/70">
+              Design, connect, and deploy your backend in minutes — not weeks.
+            </p>
           </div>
         </div>
       </div>

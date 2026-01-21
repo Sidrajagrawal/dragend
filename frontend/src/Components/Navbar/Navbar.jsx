@@ -2,21 +2,28 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import logo from '../../media/logo.png';
 import Logo_gif from '../../media/logo_gif.mp4'
+import { CheckAuth } from "../auth/AuthAPI";
 
-const Navbar = () => {
+const Navbar =  () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   
-  const handleGetStarted = () => {
-    const userIsLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-    if (userIsLoggedIn) {
+  
+ const handleGetStarted = async () => {
+  try {
+    const isLoggedIn = await CheckAuth();
+
+    if (isLoggedIn.authenticated) {
       navigate('/new');
     } else {
-      navigate('/login');
+      navigate('/auth');
     }
-  };
+  } catch {
+    navigate('/auth');
+  }
+};
 
   return (
     <nav className="w-full fixed top-0 left-0 z-50 ">

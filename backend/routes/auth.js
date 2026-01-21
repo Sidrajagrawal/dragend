@@ -8,7 +8,8 @@ const {
     verifyOtpHandler,
     profileHandler,
     logoutHandler,
-    deleteHandler
+    deleteHandler,
+    authCheck
 } = require('../controllers/authHandler');
 
 /**
@@ -207,5 +208,6 @@ route.post('/forgetPassword', forgetPasswordHandler);
  */
 route.post('/createPassword/:token', createPasswordHandler);
 route.delete('/delete', deleteHandler);
+route.get('/me', authCheck)
 
 module.exports = route;
