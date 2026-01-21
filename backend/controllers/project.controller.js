@@ -31,13 +31,11 @@ exports.createProject = async (req, res) => {
 
     let checkResult;
     if (dbType === "postgresql") {
-      checkResult = await PostgresCheck(connectionName, host, port, username, password);
+      checkResult = await PostgresCheck(connectionName, host, port,  username, password);
     }
 
     if (dbType === "mysql") {
-      checkResult = await MySqlCheck(connectionName, host, port, username, password);
-      console.log(checkResult);
-
+      checkResult = await MySqlCheck(connectionName, host, port,  username, password);
     }
 
     if (dbType === "mongodb") {
@@ -71,11 +69,11 @@ exports.createProject = async (req, res) => {
     let configPayload = { authType };
 
     if (authType === "uri") {
-      configPayload.uri = uri;
+      configPayload = uri;
     }
 
     if (authType === "credentials") {
-      configPayload.credentials = {
+      configPayload = {
         host,
         port,
         username,
@@ -85,7 +83,7 @@ exports.createProject = async (req, res) => {
     }
 
     if (authType === "apiKey") {
-      configPayload.apiKey = {
+      configPayload = {
         endpoint,
         apiKey: crypto.encrypt(apiKey),
       };
