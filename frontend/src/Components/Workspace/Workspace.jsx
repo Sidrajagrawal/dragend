@@ -5,7 +5,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import toast, { Toaster } from 'react-hot-toast';
 import LeftSidebar from './LeftSidebar';
-import { Link, Loader2, Trash2, FileDown } from 'lucide-react';
+import { Link, Loader2, Trash2, Eye, AlertCircle, CheckCircle } from 'lucide-react'; 
 import FlyoutPanel from './FlyoutPanel';
 import CustomControls from './Custom_Controls';
 import { useCallback, useState, useEffect, useRef } from 'react';
@@ -13,7 +13,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TableRefNode from './Nodes/TableRefNode';
 import DbNode from './Nodes/DbNode';
 import ApiNode from './Nodes/ApiNode';
-import { SchemaProvider } from './SchemaContext';
+// Import useSchema here
+import { SchemaProvider, useSchema } from './SchemaContext';
 import { saveWorkflowData, getProjectData, deleteProjectAPI } from './WorkflowAPI';
 import { useUndoRedo } from './useUndoRedo';
 import FieldSelectionModal from './FieldSelectionModal';
@@ -28,12 +29,15 @@ function WorkspaceContent() {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { deleteElements } = useReactFlow();
+  
+  // Get Schema Context
+  const { savedSchemas, setSavedSchemas } = useSchema();
 
   const [activePanel, setActivePanel] = useState(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isSaving, setIsSaving] = useState(false);
-
+  const [isDirty, setIsDirty] = useState(false);
   const [isDraggingNode, setIsDraggingNode] = useState(false);
   const trashCanRef = useRef(null);
 
@@ -48,6 +52,16 @@ function WorkspaceContent() {
     nodes, setNodes, edges, setEdges
   });
 
+  const onNodesChangeWrapped = useCallback((changes) => {
+    onNodesChange(changes);
+    if (changes.length > 0) setIsDirty(true);
+  }, [onNodesChange]);
+
+  const onEdgesChangeWrapped = useCallback((changes) => {
+    onEdgesChange(changes);
+    if (changes.length > 0) setIsDirty(true);
+  }, [onEdgesChange]);
+
   useEffect(() => {
     const loadWorkflow = async () => {
       if (!projectId) return;
@@ -56,11 +70,18 @@ function WorkspaceContent() {
         const data = await getProjectData(projectId);
 
         if (data.success) {
-          const { canvasState, name } = data.project;
+          const { canvasState, tables } = data.project;
 
           if (canvasState) {
             setNodes(canvasState.nodes || []);
             setEdges(canvasState.edges || []);
+            
+            // Restore saved schemas from database to context
+            if (tables && Array.isArray(tables)) {
+                setSavedSchemas(tables);
+            }
+            
+            setTimeout(() => setIsDirty(false), 50); 
           }
         }
       } catch (error) {
@@ -70,7 +91,7 @@ function WorkspaceContent() {
     };
 
     loadWorkflow();
-  }, [projectId, setNodes, setEdges]);
+  }, [projectId, setNodes, setEdges, setSavedSchemas]);
 
   const onDeleteProject = async () => {
     if (!window.confirm("Are you sure? This will delete the project and all workflows permanently.")) {
@@ -148,6 +169,7 @@ function WorkspaceContent() {
     };
 
     setEdges((eds) => addEdge(newEdge, eds));
+    setIsDirty(true); 
     toast.success("Linked Successfully", { icon: <Link size={16} />, style: { background: '#333', color: '#fff', border: '1px solid #22c55e' } });
     setModalConfig({ isOpen: false, params: null, schema: null, apiMethod: '' });
   };
@@ -157,23 +179,16 @@ function WorkspaceContent() {
       toast.error("Project ID missing. Cannot Save.");
       return;
     }
+
+    if (!isDirty) {
+      toast("No changes to save.", {
+        icon: <CheckCircle size={16} className="text-green-500"/>,
+        style: { background: '#333', color: '#fff', border: '1px solid #22c55e' }
+      });
+      return;
+    }
+
     setIsSaving(true);
-
-    const tableNodes = nodes.filter(n => n.type === 'dbNode' || n.type === 'tableRefNode');
-    const tableMap = new Map();
-
-    tableNodes.forEach(node => {
-      if (node.data?.tableName) {
-        tableMap.set(node.data.tableName, {
-          name: node.data.tableName,
-          fields: (node.data.fields || []).map(field => ({
-            ...field, constraint: field.constraint ? field.constraint : 'none'
-          }))
-        });
-      }
-    });
-
-    const uniqueTables = Array.from(tableMap.values());
 
     const endpointsPayload = nodes
       .filter(n => n.type === 'apiNode')
@@ -199,22 +214,39 @@ function WorkspaceContent() {
       });
 
     const payload = {
-      tables: uniqueTables,
+      // FIX: Save the actual Schema library, not just what is on canvas
+      tables: savedSchemas, 
       endpoints: endpointsPayload,
       canvasState: { nodes, edges }
     };
 
     try {
       await saveWorkflowData(projectId, payload);
+      setIsDirty(false); 
       toast.success("Workflow Saved Successfully!", { style: { background: '#333', color: '#fff', border: '1px solid #22c55e' } });
     } catch (error) {
       toast.error("Failed to save flow.", { style: { background: '#333', color: '#fff', border: '1px solid #ef4444' } });
     } finally {
       setIsSaving(false);
     }
-  }, [nodes, edges, projectId]);
+  }, [nodes, edges, projectId, isDirty, savedSchemas]);
 
-  const onPreview = useCallback(() => navigate('/preview'), [navigate]);
+  const onPreview = useCallback(() => {
+    if (isDirty) {
+        toast("Please save your changes before previewing.", {
+            icon: <AlertCircle size={18} className="text-yellow-400" />,
+            duration: 4000,
+            style: { 
+                background: '#333', 
+                color: '#fff', 
+                border: '1px solid #eab308' 
+            }
+        });
+        return;
+    }
+    navigate('/live-preview');
+  }, [navigate, isDirty]);
+
   const onDragOver = useCallback((event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }, []);
 
   const onDrop = useCallback((event) => {
@@ -244,6 +276,7 @@ function WorkspaceContent() {
       data: initialData
     };
     setNodes((nds) => nds.concat(newNode));
+    setIsDirty(true); 
   }, [setNodes, takeSnapshot]);
 
 
@@ -251,6 +284,7 @@ function WorkspaceContent() {
     takeSnapshot();
     setIsDraggingNode(true);
   }, [takeSnapshot]);
+  
   const onNodeDragStop = useCallback((event, node) => {
     setIsDraggingNode(false);
 
@@ -266,6 +300,7 @@ function WorkspaceContent() {
         mouseY <= trashRect.bottom
       ) {
         deleteElements({ nodes: [{ id: node.id }] });
+        setIsDirty(true); 
         toast.success("Node deleted", { icon: <Trash2 size={14} />, style: { background: '#333', color: '#fff' } });
       }
     }
@@ -294,8 +329,8 @@ function WorkspaceContent() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={onNodesChangeWrapped}
+          onEdgesChange={onEdgesChangeWrapped}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           onDrop={onDrop}
@@ -317,18 +352,39 @@ function WorkspaceContent() {
                 Delete Project
               </button>
 
-              <button onClick={onSave} disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              <button
+                onClick={onPreview}
+                className={`flex items-center gap-2 px-4 py-2 border-2 rounded-lg transition-colors shadow-md font-medium text-sm cursor-pointer
+                    ${isDirty 
+                        ? "border-yellow-600/50 text-yellow-100 hover:bg-yellow-900/20" 
+                        : "border-blue-900/50 text-blue-100 hover:bg-blue-900/20"
+                    }`}
               >
-                {isSaving && <Loader2 size={16} className="animate-spin" />}
-                {isSaving ? 'Saving...' : 'Save Flow'}
+                {isDirty ? <AlertCircle size={16} /> : <Eye size={16} />}
+                Preview
               </button>
 
+              <button 
+                onClick={onSave} 
+                disabled={isSaving || !isDirty} 
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors shadow-md font-medium text-sm relative
+                    ${isDirty 
+                        ? "bg-purple-600 hover:bg-purple-700 text-white cursor-pointer" 
+                        : "bg-gray-700 text-gray-400 cursor-not-allowed opacity-75"
+                    }
+                `}
+              >
+                {isDirty && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-[#1B1B1B]" />}
+                
+                {isSaving && <Loader2 size={16} className="animate-spin" />}
+                {isSaving ? 'Saving...' : (isDirty ? 'Save Flow' : 'Saved')}
+              </button>
              
             </div>
           </Panel>
           <CustomControls onUndo={undo} onRedo={redo} />
         </ReactFlow>
+        
         <div ref={trashCanRef} className={`absolute bottom-8 right-8 z-50 transition-all duration-300 ease-in-out transform ${isDraggingNode ? "translate-y-0 opacity-100 scale-110" : "translate-y-20 opacity-0 scale-90 pointer-events-none"
           }`}
         >

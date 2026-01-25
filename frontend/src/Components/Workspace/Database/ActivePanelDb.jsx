@@ -1,43 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Table, ChevronDown, ChevronRight, Database, LayoutTemplate } from "lucide-react";
 import { useSchema } from "../SchemaContext"; 
-import { useNodes } from '@xyflow/react'; // <--- 1. Import this hook
 
 function ActivePanelDb() {
-  const { savedSchemas, setSavedSchemas } = useSchema();
+  const { savedSchemas } = useSchema();
   const [isExpanded, setIsExpanded] = useState(true);
-  
-  // 2. Get nodes directly from the Canvas Store
-  const nodes = useNodes(); 
-
-  // 3. Sync the Sidebar list with the Canvas Nodes
-  useEffect(() => {
-    // Filter only the nodes that represent tables
-    const tableNodes = nodes.filter(
-      node => (node.type === 'dbNode' || node.type === 'tableRefNode') && node.data?.tableName
-    );
-
-    // Create a unique list of tables (remove duplicates if any)
-    const uniqueTablesMap = new Map();
-    tableNodes.forEach(node => {
-        uniqueTablesMap.set(node.data.tableName, {
-            id: node.id,
-            tableName: node.data.tableName,
-            fields: node.data.fields || []
-        });
-    });
-
-    const uniqueTablesArray = Array.from(uniqueTablesMap.values());
-
-    // Update the list ONLY if the count changes to prevent infinite re-renders
-    // (A simple check to avoid unnecessary updates)
-    if (uniqueTablesArray.length !== savedSchemas.length || 
-        JSON.stringify(uniqueTablesArray) !== JSON.stringify(savedSchemas)) {
-        setSavedSchemas(uniqueTablesArray);
-    }
-    
-  }, [nodes, setSavedSchemas, savedSchemas]);
-
 
   const onDragStartNew = (event) => {
     event.dataTransfer.setData(
@@ -104,7 +71,6 @@ function ActivePanelDb() {
                     <div className="text-center p-6 border border-dashed border-gray-700 rounded-lg bg-[#252525]/30">
                         <LayoutTemplate size={24} className="mx-auto text-gray-600 mb-2" />
                         <span className="text-gray-500 text-[10px] block">
-                           {/* Helpful tip for user */}
                            No models found.<br/>Drag "New Schema" and name it.
                         </span>
                     </div>

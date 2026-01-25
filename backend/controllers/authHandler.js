@@ -127,20 +127,22 @@ async function profileHandler(req, res) {
     const decoded = await jwtVerify(token);
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) return res.status(404).send({ msg: "User not found" });
-    res.send({ loggedIn: true, user });
+    res.send({ authenticated: true, user });
   } catch (err) {
-    res.status(403).send({ msg: "Invalid token" });
+    res.status(403).send({ authenticated: false, msg: "Invalid token" });
   }
 }
 
 async function logoutHandler(req, res) {
   try {
+    console.log("sid");
+    
     res.clearCookie("access_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    return res.status(200).json({ msg: "Logged out successfully." });
+    return res.status(200).json({ authenticated: false, msg: "Logged out successfully." });
   } catch (err) {
     return res
       .status(500)

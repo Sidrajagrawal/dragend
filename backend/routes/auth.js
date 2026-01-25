@@ -69,7 +69,7 @@ const {
  */
 route.post('/register', signupHandler);
 
-route.post("/logout", logoutHandler)
+route.get("/logout", logoutHandler)
 
 route.post('/verify-otp', verifyOtpHandler);
 

@@ -31,11 +31,11 @@ exports.createProject = async (req, res) => {
 
     let checkResult;
     if (dbType === "postgresql") {
-      checkResult = await PostgresCheck(connectionName, host, port,  username, password);
+      checkResult = await PostgresCheck(connectionName, host, port, username, password);
     }
 
     if (dbType === "mysql") {
-      checkResult = await MySqlCheck(connectionName, host, port,  username, password);
+      checkResult = await MySqlCheck(connectionName, host, port, username, password);
     }
 
     if (dbType === "mongodb") {
@@ -66,31 +66,31 @@ exports.createProject = async (req, res) => {
       description,
     });
 
-    let configPayload = { authType };
+    let configPayload = {};
 
     if (authType === "uri") {
-      configPayload = uri;
+      configPayload = {
+        uri: uri
+      };
     }
-
     if (authType === "credentials") {
       configPayload = {
         host,
         port,
         username,
         password: crypto.encrypt(password),
-        serviceName: dbType === "Oracle" ? serviceName : ""
       };
     }
 
     if (authType === "apiKey") {
       configPayload = {
-        endpoint,
+        endPoint: endpoint,
         apiKey: crypto.encrypt(apiKey),
       };
     }
     const dbConfig = await DB_config.create({
       authType: authType,
-      credentials: configPayload.credentials
+      credentials: configPayload
     });
 
     const database = await Database.create({
@@ -178,8 +178,8 @@ exports.deleteProject = async (req, res) => {
 
     await Database.deleteMany({ projectId: project._id });
     await DB_config.deleteMany({ _id: { $in: project.databaseIds } });
-    await Table.deleteMany({ projectId: project._id });     
-    await Endpoint.deleteMany({ projectId: project._id });  
+    await Table.deleteMany({ projectId: project._id });
+    await Endpoint.deleteMany({ projectId: project._id });
 
     await project.deleteOne();
 
@@ -209,6 +209,8 @@ exports.saveWorkflow = async (req, res) => {
   try {
     const { projectId } = req.params;
     const { tables, endpoints, canvasState } = req.body;
+    console.log(req.body);
+    
 
     const project = await Project.findOne({ _id: projectId, ownerId: req.user._id });
     if (!project) {
@@ -227,15 +229,15 @@ exports.saveWorkflow = async (req, res) => {
     const tableMap = {};
     const savedTables = [];
 
-    if (tables && tables.length > 0) {
+if (tables && tables.length > 0) {
       for (const tableData of tables) {
         const newTable = await Table.create({
           projectId,
           databaseId,
-          name: tableData.name,
+          name: tableData.tableName, 
           fields: tableData.fields
         });
-        tableMap[tableData.name] = newTable._id;
+        tableMap[tableData.tableName] = newTable._id; 
         savedTables.push(newTable);
       }
     }

@@ -43,10 +43,19 @@ export const LoginUserApi = async (email, password) => {
 };
 
 export const CheckAuth = async () => {
-  try {
-    const res = await api.get("/me", { withCredentials: true });
-    return res.data;
-  } catch (err) {
-    return { authenticated: false };
-  }
+    try {
+        const res = await api.get(`${BASE_API}/profile`, { withCredentials: true });
+        return res.data;
+    } catch (err) {
+        return { authenticated: false };
+    }
+};
+
+export const logoutApi = async () => {
+    try {
+        const res = await api.get(`${BASE_API}/logout`, { withCredentials: true });
+        return res.data;
+    } catch (err) {
+        return { logout: false };
+    }
 };

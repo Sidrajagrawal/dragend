@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoginUserApi, SignUpApi, VerifyOtpApi } from "./AuthAPI";
-import BG_IMAGE from "../../media/login-bg-1.png";
 import "./Auth.css";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isLogin, setIsLogin] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
@@ -45,7 +45,8 @@ export default function Auth() {
       if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
         localStorage.setItem("isLoggedIn", "true");
-        setTimeout(() => navigate("/new"), 1000);
+        const destination = location.state?.from || "/new";
+        setTimeout(() => navigate(destination), 1000);
       } else toast.error(res.message || "Invalid credentials");
     } catch {
       toast.error("Login failed");
@@ -289,12 +290,11 @@ export default function Auth() {
           </AnimatePresence>
         </div>
 
-        {/* RIGHT  */}
         <div className="hidden lg:flex w-[42%] min-w-[420px] relative p-6 text-white flex-col justify-center">
           <div
-            className="bg-none card h-full p-10 rounded-3xl max-w-md"
+            className="main-card h-full p-10 rounded-3xl max-w-md"
             style={{
-              backgroundImage: `url('${BG_IMAGE}')`,
+              backgroundImage: `url(${import.meta.env.VITE_AUTH_BG_URL})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -309,8 +309,8 @@ export default function Auth() {
               faster, deploy smarter.”
             </p>
 
-            <p className="mt-6 font-semibold">Siddharth Raj Agrawal</p>
-            <p className="text-sm text-white/70">Creator of Dragend</p>
+            <p className="mt-6 font-semibold">Visual automation made easy</p>
+            <p className="text-sm text-white/70">Developed by Dragend Team</p>
           </div>
 
           <div className="absolute card text-black -bottom-6 ml-8 w-92 h-35 p-6 rounded-2xl bg-gradient-to-br from-pink-400 to-purple-200 shadow-2xl">

@@ -42,8 +42,12 @@ const configSchema = new mongoose.Schema({
         return this.authType === "credentials";
       },
     },
+    serviceName: {
+      type: String,
+      required: false, 
+    },
 
-    endPoint: {
+    endpoint: {
       type: String,
       required: function () {
         return this.authType === "apiKey";
