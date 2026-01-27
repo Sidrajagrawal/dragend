@@ -1,0 +1,358 @@
+* {
+  box-sizing: border-box;
+}
+
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100vh;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+.doc-sidebar {
+  padding: 20px;
+  border-right: 1px solid #e5e5e5;
+  background: #fafafa;
+  overflow-y: auto;
+}
+
+.doc-logo {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.toc-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.menu-group {
+  margin-bottom: 14px;
+}
+
+.menu-group button {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #111;
+}
+
+.menu-group button:hover {
+  background: #f3f3f3;
+  border-radius: 6px;
+}
+
+.arrow {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.rotate {
+  transform: rotate(90deg);
+}
+
+.submenu {
+  padding-left: 14px;
+  margin-top: 4px;
+  border-left: 1px solid #e5e5e5;
+}
+
+.submenu a {
+  display: block;
+  font-size: 13px;
+  padding: 6px 0;
+  color: #333;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  text-decoration: underline;
+}
+
+.doc-content {
+  padding: 52px 90px;
+  overflow-y: auto;
+  max-width: 850px;
+}
+
+
+.doc-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.doc-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 42px;
+}
+
+
+
+.doc-content section {
+  margin-bottom: 40px;
+  padding: 22px 26px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+
+.doc-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-left: 10px;
+  border-left: 4px solid #111;
+}
+
+
+
+.doc-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+
+
+
+.doc-content p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #333;
+}
+
+
+
+.doc-content ul {
+  padding-left: 0;
+  margin-top: 12px;
+}
+
+.doc-content li {
+  list-style: none;
+  padding-left: 18px;
+  margin-bottom: 10px;
+  position: relative;
+  font-size: 14.5px;
+}
+
+
+
+.doc-content li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: #000;
+  font-weight: bold;
+}
+
+
+#faq h4 {
+  padding-top: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+
+#faq p {
+  padding-left: 8px;
+  color: #444;
+}* {
+  box-sizing: border-box;
+}
+
+
+.doc-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  height: 100vh;
+  background: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+.doc-sidebar {
+  padding: 20px;
+  border-right: 1px solid #e5e5e5;
+  background: #fafafa;
+  overflow-y: auto;
+}
+
+.doc-logo {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* TOC TITLE */
+.toc-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+
+.menu-group {
+  margin-bottom: 14px;
+}
+
+.menu-group button {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #111;
+}
+
+.menu-group button:hover {
+  background: #f3f3f3;
+  border-radius: 6px;
+}
+
+
+.arrow {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.rotate {
+  transform: rotate(90deg);
+}
+
+.submenu {
+  padding-left: 14px;
+  margin-top: 4px;
+  border-left: 1px solid #e5e5e5;
+}
+
+.submenu a {
+  display: block;
+  font-size: 13px;
+  padding: 6px 0;
+  color: #333;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  text-decoration: underline;
+}
+
+
+
+.doc-content {
+  padding: 52px 90px;
+  overflow-y: auto;
+  max-width: 850px;
+}
+
+
+
+.doc-content h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.doc-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 42px;
+}
+
+
+
+.doc-content section {
+  margin-bottom: 40px;
+  padding: 22px 26px;
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+
+
+.doc-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-left: 10px;
+  border-left: 4px solid #111;
+}
+
+
+
+.doc-content h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+
+
+
+.doc-content p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #333;
+}
+
+
+.doc-content ul {
+  padding-left: 0;
+  margin-top: 12px;
+}
+
+.doc-content li {
+  list-style: none;
+  padding-left: 18px;
+  margin-bottom: 10px;
+  position: relative;
+  font-size: 14.5px;
+}
+
+
+
+.doc-content li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: #000;
+  font-weight: bold;
+}
+
+
+
+#faq h4 {
+  padding-top: 12px;
+  border-top: 1px solid #e5e5e5;
+}
+
+#faq p {
+  padding-left: 8px;
+  color: #444;
+}
