@@ -7,7 +7,9 @@ const {
     createPasswordHandler,
     verifyOtpHandler,
     profileHandler,
-    logoutHandler
+    logoutHandler,
+    deleteHandler,
+    authCheck
 } = require('../controllers/authHandler');
 
 /**
@@ -67,7 +69,7 @@ const {
  */
 route.post('/register', signupHandler);
 
-route.post("/logout", logoutHandler)
+route.get("/logout", logoutHandler)
 
 route.post('/verify-otp', verifyOtpHandler);
 
@@ -205,5 +207,7 @@ route.post('/forgetPassword', forgetPasswordHandler);
  *         description: Server error
  */
 route.post('/createPassword/:token', createPasswordHandler);
+route.delete('/delete', deleteHandler);
+route.get('/me', authCheck)
 
 module.exports = route;

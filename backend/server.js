@@ -3,7 +3,7 @@ const app = express();
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const indexRoute = require('./routes/index');
-const connectDB = require('./models/index')
+const connectDB = require('./models/index');
 
 require('dotenv').config()
 const PORT = process.env.PORT || 8080;
@@ -12,11 +12,11 @@ const MONGO_URL = process.env.MONGO_URL;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-//Connect Database
+// Connect Database
 if(MONGO_URL)
     connectDB(MONGO_URL);
 else
-    console.log("No URL of Database Fetch from .env");
+    console.log("No URL of Database Fetch");
     
 
 app.use(cors({
