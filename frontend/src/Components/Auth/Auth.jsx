@@ -38,7 +38,7 @@ export default function Auth() {
     e.preventDefault();
     if (!loginData.email || !loginData.password)
       return toast.error("Fill all fields");
-
+//
     setLoading(true);
     try {
       const res = await LoginUserApi(loginData.email, loginData.password);
