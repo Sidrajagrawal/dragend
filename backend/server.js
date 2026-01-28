@@ -24,6 +24,7 @@ app.use(cors({
         'https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net'
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }));
 app.use(cookieParser());
 
