@@ -1,12 +1,12 @@
 import { Files, GitBranch, Database, Workflow, FileDown, Loader2 } from "lucide-react"; // Added Loader2
-import logo from '../../media/logo.png';
+// import logo from '../../media/logo.png';
 import { useNavigate, useParams } from 'react-router-dom'; 
 import { downloadProjectAPI } from './WorkflowAPI'; 
 import toast from 'react-hot-toast';
 import { useState } from "react";
 
 const items = [
-    { id: "Dragend", icon: logo, label: "Home", isImage: true },
+    { id: "Dragend", icon: import.meta.env.VITE_MAIN_LOGO, label: "Home", isImage: true },
     { id: "db", icon: Database, label: "Database" },
     { id: "workflow", icon: Workflow, label: "Workflow" },
     { id: "git", icon: GitBranch, label: "Version Control" },
