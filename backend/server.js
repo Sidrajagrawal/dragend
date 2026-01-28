@@ -35,4 +35,4 @@ app.get('/', (req, res) => {
     res.send("<h1>Welcome to Backendless</h1>")
 })
 
-app.listen(PORT, () => { console.log(`Server at: http://localhost:${PORT}/`) });
+app.listen(PORT, () => { console.log(`Server Running /`) });
