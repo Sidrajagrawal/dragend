@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_API = "http://localhost:8080/api";
+const BASE_API = "https://dragend-production.up.railway.app/api";
 
 export const saveWorkflowData = async (projectId, payload) => {
     try {
