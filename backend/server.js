@@ -20,7 +20,9 @@ else
     
 
 app.use(cors({
-  origin: 'http://localhost:5173',  
+  origin: ['http://localhost:5173',  
+  'https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net'
+],
   credentials: true,                
 }));
 app.use(cookieParser());

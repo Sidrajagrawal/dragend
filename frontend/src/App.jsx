@@ -2,9 +2,9 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './Components/Home/Home'
 import Contact from './Components/Contact/Contact'
-import Footer from './Components/Home/Footer';
+//import Footer from './Components/Home/Footer';
 import Workspace from './Components/Workspace/Workspace';
-import { Header } from './Components/layout/Header';
+//import { Header } from './Components/layout/Header';
 import { DragEndCreateFlow } from './Components/CreateProject/flow/DragendCreateFlow';
 import Auth from './Components/Auth/Auth';
 import UserGuide from './Components/Workspace/UserGuide'
