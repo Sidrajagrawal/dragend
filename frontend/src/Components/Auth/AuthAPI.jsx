@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_API = 'http://localhost:8080/api/auth';
+const BASE_API = 'https://dragend-production.up.railway.app/api/auth';
 
 const api = axios.create({
     baseURL: BASE_API,

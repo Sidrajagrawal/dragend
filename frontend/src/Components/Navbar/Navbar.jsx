@@ -86,11 +86,11 @@ const Navbar = () => {
         {/* Logo */}
         <div onClick={() => navigate('/')} className=" flex text-2xl sm:text-3xl font-medium text-black cursor-pointer" >
           {/* <img src={Main_logo} alt="" width={'200px'} /> */}
-          <img src={logo} alt="" width={'80px'} className="mt-2" />
+          <img src={import.meta.env.VITE_MAIN_LOGO} alt="" width={'80px'} className="mt-2" />
           {/* <img src={best_logo} alt="" width={'200px'} className=""/> */}
           {/* <video className="w-50" src={Logo_gif} autoPlay loop muted playsInline /> */}
           {/* <div className="mt-[10%]">Dragend</div> */}
-          <img src={Dragend} alt="" width={'150px'} className="mt-4" />
+          <img src={import.meta.env.VITE_DRAGEND_LOGO} alt="" width={'150px'} className="mt-4" />
         </div>
 
         <ul className="hidden md:flex items-center gap-10 text-lg font-medium">
