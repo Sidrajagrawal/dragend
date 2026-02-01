@@ -9,10 +9,34 @@ const {
   createPasswordSchema,
 } = require("../validations/auth");
 const sendEmail = require("../utils/SendEmail");
-
 require("dotenv").config();
 
 const jwtSec = process.env.JWT_SECRET;
+
+
+async function googleCallbackHandler(req, res) {
+  try {
+    const user = req.user;
+    const payload = { userId: user._id, email: user.email };
+    const token = jwt.sign(payload, jwtSec, { expiresIn: "1h" });
+
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 60 * 60 * 1000,
+    });
+
+    const frontendURL = process.env.NODE_ENV === 'production' 
+      ? 'https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net' 
+      : 'http://localhost:5173';
+      
+    res.redirect(frontendURL);
+
+  } catch (err) {
+    return res.status(500).json({ msg: "Login failed", error: err.message });
+  }
+}
 
 async function loginHandler(req, res) {
   try {
@@ -234,3 +258,4 @@ module.exports.profileHandler = profileHandler;
 module.exports.logoutHandler = logoutHandler;
 module.exports.deleteHandler = deleteHandler;
 module.exports.authCheck = authCheck;
+module.exports.googleCallbackHandler = googleCallbackHandler;

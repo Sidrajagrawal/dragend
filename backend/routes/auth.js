@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 const route = express.Router();
 const {
     loginHandler,
@@ -9,8 +10,15 @@ const {
     profileHandler,
     logoutHandler,
     deleteHandler,
-    authCheck
+    authCheck,
+    googleCallbackHandler
 } = require('../controllers/authHandler');
+
+route.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+route.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login', session: false }), 
+  googleCallbackHandler
+);
 
 /**
  * @openapi
