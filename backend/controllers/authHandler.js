@@ -32,7 +32,6 @@ async function googleCallbackHandler(req, res) {
       : 'http://localhost:5173';
       
     res.redirect(frontendURL);
-
   } catch (err) {
     return res.status(500).json({ msg: "Login failed", error: err.message });
   }

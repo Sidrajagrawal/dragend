@@ -38,8 +38,8 @@ export default function Auth() {
   const inputRefs = useRef([]);
 
   const handleGoogleLogin = () => {
-    const GOOGLE_AUTH_URL = "https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net/api/auth/google"; 
-    window.location.href = GOOGLE_AUTH_URL;
+    const RAILWAY_URL = "https://dragend-production.up.railway.app";
+    window.location.href = `${RAILWAY_URL}/api/auth/google`;
   };
 
   const handleInput = (e, type) => {
