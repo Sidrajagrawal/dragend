@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_API = "https://dragend-production.up.railway.app/api";
+const BASE_API = import.meta.env.VITE_BG_VIDEO_URL;
 
 export async function CreateProjectAPI(data) {
   try {
