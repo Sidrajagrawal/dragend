@@ -19,8 +19,10 @@ connectDB(MONGO_URL);
 
 
 app.use(cors({
-    origin: ['http://localhost:5173',
-        'https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net'
+    origin: [
+        'http://localhost:5173',
+        'https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net',
+        'https://dragend.onrender.com'
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

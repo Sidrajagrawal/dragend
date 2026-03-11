@@ -25,10 +25,12 @@
     "mssql": "^12.2.0",
     "mysql2": "^3.16.1",
     "nodemailer": "^7.0.12",
-    "nodemon": "^3.1.11",
     "oracledb": "^6.10.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
