@@ -38,8 +38,9 @@ export default function Auth() {
   const inputRefs = useRef([]);
 
   const handleGoogleLogin = () => {
-    const RAILWAY_URL = "https://dragend-production.up.railway.app";
-    window.location.href = `${RAILWAY_URL}/api/auth/google`;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_BASE_API;
+    const GOOGLE_AUTH_URL = `${BACKEND_URL}/auth/google`; 
+    window.location.href = GOOGLE_AUTH_URL;
   };
 
   const handleInput = (e, type) => {
@@ -58,7 +59,7 @@ export default function Auth() {
       const res = await LoginUserApi(loginData.email, loginData.password);
       if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
-        localStorage.setItem("isLoggedIn", "true");
+        // Removed localStorage setting here; relying purely on HTTP-only cookie
         const destination = location.state?.from || "/new";
         setTimeout(() => navigate(destination), 1000);
       } else toast.error(res.message || "Invalid credentials");
