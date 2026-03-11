@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_API = 'https://dragend-production.up.railway.app/api/auth';
+// const BASE_API = 'https://dragend-production.up.railway.app/api/auth';
+const BASE_API = import.meta.env.VITE_BG_VIDEO_URL + '/auth';
 
 const api = axios.create({
     baseURL: BASE_API,
