@@ -1,11 +1,10 @@
 import axios from "axios";
 
-// const BASE_API = 'https://dragend-production.up.railway.app/api/auth';
-const BASE_API = import.meta.env.VITE_BG_VIDEO_URL + '/auth';
+const BASE_API = import.meta.env.VITE_BACKEND_BASE_API + '/auth';
 
 const api = axios.create({
     baseURL: BASE_API,
-    withCredentials: true,
+    withCredentials: true, 
     headers: {
         "Content-Type": "application/json",
     },
@@ -13,7 +12,7 @@ const api = axios.create({
 
 export const SignUpApi = async (username, email, password, Cpassword) => {
     try {
-        const response = await api.post(`${BASE_API}/register`, {
+        const response = await api.post(`/register`, {
             username,
             email,
             password,
@@ -27,7 +26,7 @@ export const SignUpApi = async (username, email, password, Cpassword) => {
 
 export const VerifyOtpApi = async (email, otp) => {
     try {
-        const response = await api.post(`${BASE_API}/verify-otp`, { email, otp });
+        const response = await api.post(`/verify-otp`, { email, otp });
         return response;
     } catch (error) {
         throw error.response ? error.response.data : { message: "Network Error" };
@@ -36,7 +35,7 @@ export const VerifyOtpApi = async (email, otp) => {
 
 export const LoginUserApi = async (email, password) => {
     try {
-        const response = await api.post(`${BASE_API}/login`, { email, password });
+        const response = await api.post(`/login`, { email, password });
         return response.data;
     } catch (error) {
         throw error.response ? error.response.data : { message: "Network Error" };
@@ -45,7 +44,7 @@ export const LoginUserApi = async (email, password) => {
 
 export const CheckAuth = async () => {
     try {
-        const res = await api.get(`${BASE_API}/profile`, { withCredentials: true });
+        const res = await api.get(`/profile`);
         return res.data;
     } catch (err) {
         return { authenticated: false };
@@ -54,7 +53,7 @@ export const CheckAuth = async () => {
 
 export const logoutApi = async () => {
     try {
-        const res = await api.get(`${BASE_API}/logout`, { withCredentials: true });
+        const res = await api.get(`/logout`);
         return res.data;
     } catch (err) {
         return { logout: false };

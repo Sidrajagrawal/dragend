@@ -38,7 +38,8 @@ export default function Auth() {
   const inputRefs = useRef([]);
 
   const handleGoogleLogin = () => {
-    const GOOGLE_AUTH_URL = "https://dragend-h8cjcqdsfcc8gaex.centralindia-01.azurewebsites.net/api/auth/google"; 
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_BASE_API;
+    const GOOGLE_AUTH_URL = `${BACKEND_URL}/auth/google`; 
     window.location.href = GOOGLE_AUTH_URL;
   };
 
@@ -58,7 +59,7 @@ export default function Auth() {
       const res = await LoginUserApi(loginData.email, loginData.password);
       if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
-        localStorage.setItem("isLoggedIn", "true");
+        // Removed localStorage setting here; relying purely on HTTP-only cookie
         const destination = location.state?.from || "/new";
         setTimeout(() => navigate(destination), 1000);
       } else toast.error(res.message || "Invalid credentials");
