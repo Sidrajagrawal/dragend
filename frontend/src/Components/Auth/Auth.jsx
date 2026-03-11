@@ -38,8 +38,9 @@ export default function Auth() {
   const inputRefs = useRef([]);
 
   const handleGoogleLogin = () => {
-    const RAILWAY_URL = "https://dragend-production.up.railway.app";
-    window.location.href = `${RAILWAY_URL}/api/auth/google`;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_BASE_API;
+    const GOOGLE_AUTH_URL = `${BACKEND_URL}/auth/google`; 
+    window.location.href = GOOGLE_AUTH_URL;
   };
 
   const handleInput = (e, type) => {
@@ -58,7 +59,7 @@ export default function Auth() {
       const res = await LoginUserApi(loginData.email, loginData.password);
       if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
-        localStorage.setItem("isLoggedIn", "true");
+        // Removed localStorage setting here; relying purely on HTTP-only cookie
         const destination = location.state?.from || "/new";
         setTimeout(() => navigate(destination), 1000);
       } else toast.error(res.message || "Invalid credentials");
@@ -72,6 +73,7 @@ export default function Auth() {
   const handleSignup = async (e) => {
     e.preventDefault();
     const { username, email, password, Cpassword } = signupData;
+    console.log(username);
 
     if (!username || !email || !password)
       return toast.error("All fields required");
@@ -80,13 +82,15 @@ export default function Auth() {
     setLoading(true);
     try {
       const res = await SignUpApi(username, email, password, Cpassword);
+      console.log(res);
       if (res.status === 201) {
         toast.success("Check your email for OTP");
         setShowOtp(true);
         setTimeLeft(180);
       }
-    } catch {
+    } catch(err) {
       toast.error("Signup failed");
+      console.log(err)
     } finally {
       setLoading(false);
     }

@@ -13,6 +13,13 @@ require("dotenv").config();
 
 const jwtSec = process.env.JWT_SECRET;
 
+// --- DYNAMIC COOKIE OPTIONS ---
+// This ensures that login, google callback, and logout all use the EXACT same settings.
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // 'true' in prod, 'false' in local
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 'none' for cross-site prod, 'lax' locally
+});
 
 async function googleCallbackHandler(req, res) {
   try {
@@ -20,10 +27,9 @@ async function googleCallbackHandler(req, res) {
     const payload = { userId: user._id, email: user.email };
     const token = jwt.sign(payload, jwtSec, { expiresIn: "1h" });
 
+    // Use dynamic cookie options
     res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      ...getCookieOptions(),
       maxAge: 60 * 60 * 1000,
     });
 
@@ -54,15 +60,24 @@ async function loginHandler(req, res) {
     const token = jwt.sign(payload, jwtSec, { expiresIn: "1h" });
 
     res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      ...getCookieOptions(),
       maxAge: 60 * 60 * 1000,
     });
 
     return res.status(200).send({ msg: "Login successfully." });
   } catch (err) {
     return res.status(500).send({ msg: "Server Error", err: err.message });
+  }
+}
+
+async function logoutHandler(req, res) {
+  try {
+    res.clearCookie("access_token", getCookieOptions());
+    return res.status(200).json({ authenticated: false, msg: "Logged out successfully." });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ msg: "Server error during logout.", error: err.message });
   }
 }
 
@@ -156,23 +171,6 @@ async function profileHandler(req, res) {
   }
 }
 
-async function logoutHandler(req, res) {
-  try {
-    console.log("sid");
-    
-    res.clearCookie("access_token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    return res.status(200).json({ authenticated: false, msg: "Logged out successfully." });
-  } catch (err) {
-    return res
-      .status(500)
-      .json({ msg: "Server error during logout.", error: err.message });
-  }
-}
-
 async function forgetPasswordHandler(req, res) {
   try {
     await forgetSchema.validateAsync(req.body);
@@ -223,12 +221,11 @@ async function createPasswordHandler(req, res) {
     return res.status(500).send({ msg: "Server error.", error: err.message });
   }
 }
+
 async function deleteHandler(req, res) {
   const id = req.params.username;
   try {
-    const user = await User.findOne({
-      username: id,
-    });
+    const user = await User.findOne({ username: id });
     if (!user) return res.status(404).json({ msg: "Not found" });
     await user.deleteOne();
     res.json({ success: true, msg: "User deleted" });
@@ -236,6 +233,7 @@ async function deleteHandler(req, res) {
     res.status(500).json({ msg: "Delete failed" });
   }
 }
+
 async function authCheck(req, res) {
   const token = req.cookies.access_token;
   if (!token) return res.status(401).send({ authenticated: false });
