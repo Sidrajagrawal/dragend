@@ -8,16 +8,15 @@ const sendEmail = async (username, email, otp) => {
     try {
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465,           
-            secure: true,        
+            port: 587,             // Yahan 465 ki jagah 587 use kar rahe hain
+            secure: false,         // 587 ke liye 'secure' hamesha false hota hai
+            requireTLS: true,      // Security ke liye TLS force kar rahe hain
             auth: {
                 user: EMAIL_HOST_USER,
                 pass: EMAIL_HOST_PASSWORD,
             },
-            // Render par timeout aur network drops rokne ke liye yeh zaroori hai
-            connectionTimeout: 10000, // 10 seconds timeout
             tls: {
-                rejectUnauthorized: false // Cloud se bhejte waqt SSL errors ko ignore karne ke liye
+                rejectUnauthorized: false
             }
         });
 
