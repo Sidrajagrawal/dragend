@@ -1,30 +1,42 @@
-const nodemailer = require("nodemailer");
+const axios = require("axios");
 require('dotenv').config();
 
-const EMAIL_HOST_USER = process.env.EMAIL_HOST_USER;
-const EMAIL_HOST_PASSWORD = process.env.EMAIL_HOST_PASSWORD;
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+// Yahan wahi email rakhna jis se aapne Brevo par account banaya hai
+const SENDER_EMAIL = process.env.EMAIL_HOST_USER; 
 
 const sendEmail = async (username, email, otp) => {
-
     try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: EMAIL_HOST_USER,
-                pass: EMAIL_HOST_PASSWORD,
+        const response = await axios.post(
+            'https://api.brevo.com/v3/smtp/email',
+            {
+                sender: { 
+                    name: "Dragend Team", 
+                    email: SENDER_EMAIL 
+                },
+                to: [
+                    { 
+                        email: email, 
+                        name: username 
+                    }
+                ],
+                subject: "One-Time Password (OTP) Verification",
+                htmlContent: `<p>Hi ${username},</p><p>Your verification code is: <strong>${otp}</strong></p><p>If you did not request this, please ignore this email.</p>`,
             },
-        });
-
-        const info = await transporter.sendMail({
-            from: EMAIL_HOST_USER,
-            to: email,
-            subject: "One-Time Password (OTP) Verification",
-            text: `Hi ${username},\n\nHere is your verification code: ${otp}\n\nIf you did not request this, please ignore this email.`,
-            html: `<p>Hi ${username},</p><p>Your verification code is: <strong>${otp}</strong></p>`
-        });
-        return info;
+            {
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': BREVO_API_KEY,
+                    'content-type': 'application/json'
+                }
+            }
+        );
+        
+        console.log("Email sent successfully via Brevo HTTP API!");
+        return response.data;
     } catch (err) {
-        console.error("SendEmail error:", err);
+        // Yeh error exactly batayega agar Brevo API mein koi issue hoga
+        console.error("Brevo API error:", err.response ? err.response.data : err.message);
         throw err;
     }
 };

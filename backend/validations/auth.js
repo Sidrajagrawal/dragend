@@ -19,7 +19,6 @@ const signupSchema = Joi.object({
             'string.empty': 'Email is required',
         }),
      password: Joi.string()
-         .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
          .required(),
  
      Cpassword: Joi.ref('password'),

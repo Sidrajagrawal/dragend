@@ -73,6 +73,7 @@ export default function Auth() {
   const handleSignup = async (e) => {
     e.preventDefault();
     const { username, email, password, Cpassword } = signupData;
+    console.log(username);
 
     if (!username || !email || !password)
       return toast.error("All fields required");
@@ -81,13 +82,15 @@ export default function Auth() {
     setLoading(true);
     try {
       const res = await SignUpApi(username, email, password, Cpassword);
+      console.log(res);
       if (res.status === 201) {
         toast.success("Check your email for OTP");
         setShowOtp(true);
         setTimeLeft(180);
       }
-    } catch {
+    } catch(err) {
       toast.error("Signup failed");
+      console.log(err)
     } finally {
       setLoading(false);
     }
