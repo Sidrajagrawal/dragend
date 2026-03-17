@@ -2,7 +2,6 @@ const axios = require("axios");
 require('dotenv').config();
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-// Yahan wahi email rakhna jis se aapne Brevo par account banaya hai
 const SENDER_EMAIL = process.env.EMAIL_HOST_USER; 
 
 const sendEmail = async (username, email, otp) => {
