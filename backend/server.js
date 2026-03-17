@@ -14,9 +14,7 @@ const MONGO_URL = process.env.MONGO_URL;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Connect Database
 connectDB(MONGO_URL);
-
 
 app.use(cors({
     origin: [
@@ -30,10 +28,8 @@ app.use(cors({
 app.use(cookieParser());
 app.use(passport.initialize());
 
-//Base API
 app.use('/api', indexRoute)
 
-//Testing Route
 app.get('/', (req, res) => {
     res.send("<h1>Welcome to Backendless</h1>")
 })

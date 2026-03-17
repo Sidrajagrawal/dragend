@@ -13,12 +13,10 @@ require("dotenv").config();
 
 const jwtSec = process.env.JWT_SECRET;
 
-// --- DYNAMIC COOKIE OPTIONS ---
-// This ensures that login, google callback, and logout all use the EXACT same settings.
 const getCookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // 'true' in prod, 'false' in local
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // 'none' for cross-site prod, 'lax' locally
+  secure: process.env.NODE_ENV === "production", 
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 });
 
 async function googleCallbackHandler(req, res) {
@@ -27,7 +25,6 @@ async function googleCallbackHandler(req, res) {
     const payload = { userId: user._id, email: user.email };
     const token = jwt.sign(payload, jwtSec, { expiresIn: "1h" });
 
-    // Use dynamic cookie options
     res.cookie("access_token", token, {
       ...getCookieOptions(),
       maxAge: 60 * 60 * 1000,
