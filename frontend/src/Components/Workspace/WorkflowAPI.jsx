@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_API = "https://dragend-production.up.railway.app/api";
+const BASE_API = import.meta.env.VITE_BACKEND_BASE_API;
 
 export const saveWorkflowData = async (projectId, payload) => {
     try {

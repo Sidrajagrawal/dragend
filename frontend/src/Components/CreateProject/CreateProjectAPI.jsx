@@ -1,9 +1,10 @@
 import axios from 'axios';
 
-const BASE_API = "https://dragend-production.up.railway.app/api";
+const BASE_API = import.meta.env.VITE_BACKEND_BASE_API;
 
 export async function CreateProjectAPI(data) {
   try {
+    console.log(data);
     const res = await axios.post(`${BASE_API}/project/create`, data, {
       withCredentials: true,
       headers: {
