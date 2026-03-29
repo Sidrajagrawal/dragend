@@ -117,8 +117,9 @@ exports.createProject = async (req, res) => {
 };
 
 exports.getProjects = async (req, res) => {
+  console.log("user id");
   try {
-    const projects = await Project.find({ user: req.user._id })
+    const projects = await Project.find({ ownerId: req.user._id })
       .populate("databaseIds");
 
     res.json({ success: true, projects });

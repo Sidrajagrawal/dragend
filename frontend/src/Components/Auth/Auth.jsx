@@ -59,8 +59,7 @@ export default function Auth() {
       const res = await LoginUserApi(loginData.email, loginData.password);
       if (res.success || res.msg === "Login successfully.") {
         toast.success("Login successful!");
-        // Removed localStorage setting here; relying purely on HTTP-only cookie
-        const destination = location.state?.from || "/new";
+        const destination = "/profile";
         setTimeout(() => navigate(destination), 1000);
       } else toast.error(res.message || "Invalid credentials");
     } catch {

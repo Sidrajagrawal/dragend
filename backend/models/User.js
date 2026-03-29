@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: [true, 'User name is required'],
+    unique : true
   },
 
   email: {
@@ -31,7 +32,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-
   otpExpires: {
     type: Date,
     default: null
