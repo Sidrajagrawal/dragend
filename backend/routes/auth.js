@@ -11,8 +11,12 @@ const {
     logoutHandler,
     deleteHandler,
     authCheck,
-    googleCallbackHandler
+    googleCallbackHandler,
+    checkUsername,
+    getPublicProfile,
+    updateProfile
 } = require('../controllers/authHandler');
+const authMiddleware = require('../middleware/authMiddleware');
 
 route.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 route.get('/google/callback', 
@@ -128,7 +132,7 @@ route.post('/verify-otp', verifyOtpHandler);
  */
 route.post('/login', loginHandler);
 
-route.get('/profile', profileHandler)
+route.get('/profile', authMiddleware, profileHandler);
 
 /**
  * @openapi
@@ -217,5 +221,8 @@ route.post('/forgetPassword', forgetPasswordHandler);
 route.post('/createPassword/:token', createPasswordHandler);
 route.delete('/delete', deleteHandler);
 route.get('/me', authCheck)
+route.post('/check-username', checkUsername);
+route.put('/update', authMiddleware, updateProfile); //! not getting executed
+route.get("/profile/:username", getPublicProfile);
 
 module.exports = route;

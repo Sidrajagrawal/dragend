@@ -10,6 +10,8 @@ import Auth from './Components/auth/Auth';
 import UserGuide from './Components/Workspace/UserGuide'
 import LivePreview from './Components/Workspace/LivePreview/LivePreview'
 import Explore from './Components/Explore/Explore';
+import { ProfilePage } from './Components/Profile/ProfilePage';
+import { PublicProfilePage } from './Components/Profile/PublicProfilePage';
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route path="/explore" element={<Explore />} />
         <Route path="/user-guide" element={<UserGuide />} />
         <Route path="/live-preview" element={<LivePreview />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:username" element={<PublicProfilePage />} />
       </Routes>
     </Router>
   )

@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 connectDB(MONGO_URL);
+app.use(cookieParser());
 
 app.use(cors({
     origin: [
@@ -25,10 +26,9 @@ app.use(cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 }));
-app.use(cookieParser());
 app.use(passport.initialize());
 
-app.use('/api', indexRoute)
+app.use('/api', indexRoute);
 
 app.get('/', (req, res) => {
     res.send("<h1>Welcome to Backendless</h1>")
