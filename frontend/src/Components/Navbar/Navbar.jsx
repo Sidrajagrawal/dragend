@@ -56,8 +56,9 @@ const Navbar = () => {
   const handleProfile = async () => {
     try {
       const isLoggedIn = await CheckAuth();
+      console.log(isLoggedIn)
       if (isLoggedIn.authenticated) {
-        navigate('/projects');
+        navigate('/profile');
       } else {
         navigate('/auth', { state: { from: "/my-projects" } });
       }
@@ -123,7 +124,7 @@ const Navbar = () => {
                       <button onClick={() => navigate('/profile')} className="text-left px-6 py-3 hover:bg-purple-50 hover:text-purple-700 transition-colors flex items-center gap-3">
                         My Profile
                       </button>
-                      <button onClick={() => navigate('/projects')} className="text-left px-6 py-3 hover:bg-purple-50 hover:text-purple-700 transition-colors flex items-center gap-3">
+                      <button onClick={() => navigate('/profile')} className="text-left px-6 py-3 hover:bg-purple-50 hover:text-purple-700 transition-colors flex items-center gap-3">
                         My Projects
                       </button>
                       <div className="border-t border-gray-100 my-1"></div>
@@ -136,7 +137,7 @@ const Navbar = () => {
               </div>
             ) : (
               <div onClick={handleProfile} className="cursor-pointer text-black hover:bg-linear-to-r hover:from-purple-600 hover:to-pink-500 hover:bg-clip-text hover:text-transparent transition-all duration-300 ">
-                My Project
+                My Profile
               </div>
             )}
           </li>
@@ -182,7 +183,7 @@ const Navbar = () => {
                 <div className="w-1/2 h-[1px] bg-gray-300 my-2"></div>
                 <li className="text-purple-900 font-bold uppercase">@{user.username}</li>
                 <li onClick={() => navigate('/profile')} className="cursor-pointer text-gray-700 hover:text-purple-600">My Profile</li>
-                <li onClick={() => navigate('/projects')} className="cursor-pointer text-gray-700 hover:text-purple-600">My Projects</li>
+                <li onClick={() => navigate('/profile')} className="cursor-pointer text-gray-700 hover:text-purple-600">My Projects</li>
                 <li onClick={() => { handleLogout(); setOpen(false); }} className="cursor-pointer text-red-500 font-semibold">Logout</li>
               </>
             )}

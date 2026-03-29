@@ -11,7 +11,7 @@ const {
   deleteProject,
   deleteDatabase,
   saveWorkflow
-} = require("../controllers/project.controller");
+} = require("../controllers/project.controller.js");
 
 router.post("/create", authMiddleware, createProject);
 

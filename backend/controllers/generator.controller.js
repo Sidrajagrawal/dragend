@@ -17,13 +17,29 @@ const LIB_VERSIONS = {
     mysql2: "^3.9.2"
 };
 
-const generatePackageJson = (projectName, dbType) => {
+const generatePackageJson = (projectName, dbType, tables) => {
     const dependencies = {
         "express": LIB_VERSIONS.express,
         "cors": LIB_VERSIONS.cors,
         "dotenv": LIB_VERSIONS.dotenv,
     };
     const devDependencies = { "nodemon": LIB_VERSIONS.nodemon };
+
+    // Auto-detect if we need hashing or UUID libraries based on the user's schema
+    let needsBcrypt = false, needsArgon2 = false, needsUuid = false;
+    tables.forEach(t => {
+        t.fields.forEach(f => {
+            if (f.isHashed) {
+                if (f.hashAlgorithm === 'argon2') needsArgon2 = true;
+                else needsBcrypt = true;
+            }
+            if (f.isUuid) needsUuid = true;
+        });
+    });
+
+    if (needsBcrypt) dependencies["bcrypt"] = "^5.1.1";
+    if (needsArgon2) dependencies["argon2"] = "^0.40.1";
+    if (needsUuid) dependencies["uuid"] = "^10.0.0";
 
     if (dbType === 'postgresql') {
         dependencies["pg"] = LIB_VERSIONS.pg;
@@ -158,56 +174,122 @@ module.exports = db;`;
 };
 
 const generateModelFile = (table, dbType) => {
-    const getSqlType = (t) => {
-        if (t === 'string') return 'DataTypes.STRING';
-        if (t === 'number') return 'DataTypes.INTEGER';
-        if (t === 'boolean') return 'DataTypes.BOOLEAN';
-        if (t === 'date') return 'DataTypes.DATE';
-        return 'DataTypes.STRING';
-    };
-
-    const getMongoType = (t) => {
-        if (t === 'string') return 'String';
-        if (t === 'number') return 'Number';
-        if (t === 'boolean') return 'Boolean';
-        if (t === 'date') return 'Date';
-        return 'String';
-    };
-
+    // --- MONGODB GENERATION ---
     if (dbType === 'mongodb') {
-        const fields = table.fields.map(f => {
-            return `  ${f.name}: { type: ${getMongoType(f.type)}, required: ${f.required || false}, unique: ${f.constraint === 'unique'} }`;
-        }).join(',\n');
+        let fieldsArr = [];
+        table.fields.forEach(f => {
+            let typeStr = f.type === 'number' ? 'Number' : f.type === 'boolean' ? 'Boolean' : f.type === 'date' ? 'Date' : f.type === 'json' ? 'mongoose.Schema.Types.Mixed' : 'String';
+            if (f.constraint === 'foreign' && f.targetTable) typeStr = 'mongoose.Schema.Types.ObjectId';
+            if (f.isUuid) typeStr = 'String'; 
+            
+            let props = [`type: ${f.isArray ? `[${typeStr}]` : typeStr}`];
+            if (f.required) props.push(`required: true`);
+            if (f.unique || f.index) props.push(`unique: true`);
+            if (f.constraint === 'foreign' && f.targetTable) props.push(`ref: '${f.targetTable}'`);
+            if (f.defaultValue) props.push(`default: ${f.type === 'string' ? `'${f.defaultValue}'` : f.defaultValue}`);
+            if (f.isHidden) props.push(`select: false`);
+            
+            // Validations
+            if (f.type === 'string' && f.minLength) props.push(`minlength: ${f.minLength}`);
+            if (f.type === 'string' && f.maxLength) props.push(`maxlength: ${f.maxLength}`);
+            if (f.type === 'string' && f.regexPattern) props.push(`match: /${f.regexPattern}/`);
+            if (f.type === 'number' && f.minValue) props.push(`min: ${f.minValue}`);
+            if (f.type === 'number' && f.maxValue) props.push(`max: ${f.maxValue}`);
+            if (f.type === 'enum' && f.enumValues) props.push(`enum: [${f.enumValues.split(',').map(e => `'${e.trim()}'`).join(', ')}]`);
+            
+            fieldsArr.push(`  ${f.name}: { ${props.join(', ')} }`);
+        });
 
-        return `const mongoose = require('mongoose');
+        let imports = `const mongoose = require('mongoose');\n`;
+        let hooks = '';
+        
+        const hashedFields = table.fields.filter(f => f.isHashed);
+        const uuidFields = table.fields.filter(f => f.isUuid && f.constraint === 'primary');
+        
+        if (hashedFields.length > 0 || uuidFields.length > 0) {
+            if (hashedFields.some(f => f.hashAlgorithm === 'bcrypt')) imports += `const bcrypt = require('bcrypt');\n`;
+            if (hashedFields.some(f => f.hashAlgorithm === 'argon2')) imports += `const argon2 = require('argon2');\n`;
+            if (hashedFields.some(f => f.hashAlgorithm === 'sha256')) imports += `const crypto = require('crypto');\n`;
+            if (uuidFields.length > 0) imports += `const { v4: uuidv4 } = require('uuid');\n`;
+            
+            hooks += `\n${table.name}Schema.pre('save', async function(next) {\n`;
+            
+            uuidFields.forEach(f => {
+                hooks += `  if (this.isNew && !this.${f.name}) this.${f.name} = uuidv4();\n`;
+            });
 
-const ${table.name}Schema = new mongoose.Schema({
-${fields}
-}, { timestamps: true });
+            hashedFields.forEach(f => {
+                hooks += `  if (this.isModified('${f.name}')) {\n`;
+                if (f.hashAlgorithm === 'argon2') hooks += `    this.${f.name} = await argon2.hash(this.${f.name});\n`;
+                else if (f.hashAlgorithm === 'sha256') hooks += `    this.${f.name} = crypto.createHash('sha256').update(this.${f.name}).digest('hex');\n`;
+                else hooks += `    this.${f.name} = await bcrypt.hash(this.${f.name}, 10);\n`;
+                hooks += `  }\n`;
+            });
+            hooks += `  next();\n});\n`;
+        }
 
-module.exports = mongoose.model('${table.name}', ${table.name}Schema);`;
+        return `${imports}\nconst ${table.name}Schema = new mongoose.Schema({\n${fieldsArr.join(',\n')}\n}, { timestamps: ${table.timestamps ? 'true' : 'false'} });\n${hooks}\nmodule.exports = mongoose.model('${table.name}', ${table.name}Schema);`;
+    } 
+    
+    // --- SQL / SEQUELIZE GENERATION ---
+    else {
+        let fieldsArr = [];
+        table.fields.forEach(f => {
+            let typeStr = f.isUuid ? 'DataTypes.UUID' : f.type === 'number' ? 'DataTypes.INTEGER' : f.type === 'boolean' ? 'DataTypes.BOOLEAN' : f.type === 'date' ? 'DataTypes.DATE' : f.type === 'json' ? 'DataTypes.JSON' : 'DataTypes.STRING';
+            if (f.type === 'enum' && f.enumValues) typeStr = `DataTypes.ENUM(${f.enumValues.split(',').map(e => `'${e.trim()}'`).join(', ')})`;
+            
+            let props = [`type: ${typeStr}`];
+            if (f.constraint === 'primary') props.push(`primaryKey: true`);
+            if (f.isUuid && f.constraint === 'primary') props.push(`defaultValue: DataTypes.UUIDV4`);
+            if (f.autoIncrement && f.constraint === 'primary') props.push(`autoIncrement: true`);
+            
+            props.push(`allowNull: ${!f.required}`);
+            if (f.unique) props.push(`unique: true`);
+            if (f.defaultValue) props.push(`defaultValue: ${f.type === 'string' ? `'${f.defaultValue}'` : f.defaultValue}`);
+            
+            if (f.constraint === 'foreign' && f.targetTable) {
+                props.push(`references: { model: '${f.targetTable}', key: '${f.targetField || 'id'}' }`);
+                if (f.onDelete) props.push(`onDelete: '${f.onDelete.toUpperCase()}'`);
+                if (f.onUpdate) props.push(`onUpdate: '${f.onUpdate.toUpperCase()}'`);
+            }
 
-    } else {
-        const fields = table.fields.map(f => {
-            return `    ${f.name}: {
-      type: ${getSqlType(f.type)},
-      allowNull: ${!f.required},
-      unique: ${f.constraint === 'unique'},
-      primaryKey: ${f.constraint === 'primary'}
-    }`;
-        }).join(',\n');
+            let validate = [];
+            if (f.minLength || f.maxLength) validate.push(`len: [${f.minLength || 0}, ${f.maxLength || 255}]`);
+            if (f.regexPattern) validate.push(`is: /${f.regexPattern}/`);
+            if (f.minValue) validate.push(`min: ${f.minValue}`);
+            if (f.maxValue) validate.push(`max: ${f.maxValue}`);
+            if (validate.length > 0) props.push(`validate: { ${validate.join(', ')} }`);
 
-        return `module.exports = (sequelize, DataTypes) => {
-  const ${table.name} = sequelize.define('${table.name}', {
-${fields}
-  });
-  return ${table.name};
-};`;
+            fieldsArr.push(`    ${f.name}: { ${props.join(', ')} }`);
+        });
+
+        let imports = '', hooks = '';
+        const hashedFields = table.fields.filter(f => f.isHashed);
+        if (hashedFields.length > 0) {
+            if (hashedFields.some(f => f.hashAlgorithm === 'bcrypt')) imports += `const bcrypt = require('bcrypt');\n`;
+            if (hashedFields.some(f => f.hashAlgorithm === 'argon2')) imports += `const argon2 = require('argon2');\n`;
+            if (hashedFields.some(f => f.hashAlgorithm === 'sha256')) imports += `const crypto = require('crypto');\n`;
+
+            const hookLogic = (instanceVar, isUpdate) => {
+                let logic = '';
+                hashedFields.forEach(f => {
+                    const condition = isUpdate ? `if (${instanceVar}.changed('${f.name}')) {` : `if (${instanceVar}.${f.name}) {`;
+                    let hashLine = f.hashAlgorithm === 'argon2' ? `await argon2.hash(${instanceVar}.${f.name})` : f.hashAlgorithm === 'sha256' ? `crypto.createHash('sha256').update(${instanceVar}.${f.name}).digest('hex')` : `await bcrypt.hash(${instanceVar}.${f.name}, 10)`;
+                    logic += `      ${condition} ${instanceVar}.${f.name} = ${hashLine}; }\n`;
+                });
+                return logic;
+            };
+
+            hooks += `\n  ${table.name}.beforeCreate(async (user) => {\n${hookLogic('user', false)}  });`;
+            hooks += `\n  ${table.name}.beforeUpdate(async (user) => {\n${hookLogic('user', true)}  });`;
+        }
+
+        return `${imports}module.exports = (sequelize, DataTypes) => {\n  const ${table.name} = sequelize.define('${table.name}', {\n${fieldsArr.join(',\n')}\n  }, { timestamps: ${table.timestamps ? 'true' : 'false'} });\n${hooks}\n  return ${table.name};\n};`;
     }
 };
 
 const generateController = (tableName, endpoints, dbType) => {
-    const modelName = tableName; // e.g., 'User'
+    const modelName = tableName; 
 
     let code = dbType === 'mongodb'
         ? `const ${modelName} = require('../models/${modelName}');\n\n`
@@ -267,7 +349,6 @@ const generateRouteFile = (controllerName, endpoints) => {
     return code;
 };
 
-
 exports.downloadProject = async (req, res) => {
     try {
         const { projectId } = req.params;
@@ -299,7 +380,7 @@ exports.downloadProject = async (req, res) => {
 
         const zip = new JSZip();
 
-        zip.file("package.json", generatePackageJson(project.name, dbType));
+        zip.file("package.json", generatePackageJson(project.name, dbType, tables));
         zip.file(".env", generateDotEnv(8080, dbType, dbConfig, dbName));
         zip.file("server.js", generateServerJs(8080, dbType));
         zip.file("README.md", `# ${project.name}\nGenerated Backend Project`);
@@ -307,6 +388,7 @@ exports.downloadProject = async (req, res) => {
         const modelsFolder = zip.folder("models");
         const tableNames = tables.map(t => t.name);
         modelsFolder.file("index.js", generateDbConnection(dbType, tableNames));
+        
         tables.forEach(table => {
             modelsFolder.file(`${table.name}.js`, generateModelFile(table, dbType));
         });

@@ -1,10 +1,16 @@
 const mongoose = require("mongoose");
 
 const configSchema = new mongoose.Schema({
+  envType: {
+    type: String,
+    required: true,
+    enum: ["local", "deployed"],
+  },
+
   authType: {
     type: String,
     required: true,
-    enum: ["credentials", "apiKey", "uri"],
+    enum: ["credentials", "uri"], 
   },
 
   credentials: {
@@ -42,24 +48,12 @@ const configSchema = new mongoose.Schema({
         return this.authType === "credentials";
       },
     },
+    
     serviceName: {
       type: String,
       required: false, 
-    },
-
-    endpoint: {
-      type: String,
-      required: function () {
-        return this.authType === "apiKey";
-      },
-    },
-
-    apiKey: {
-      type: String,
-      required: function () {
-        return this.authType === "apiKey";
-      },
     }
+    
   },
 });
 

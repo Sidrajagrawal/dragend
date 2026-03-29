@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
-import { Database, Settings2, Trash2 } from "lucide-react";
+import { Database } from "lucide-react";
 import SchemaDetailModal from "../Database/SchemaDetailModal";
 import { useSchema } from "../SchemaContext";
 
@@ -38,14 +38,22 @@ function TableRefNode({ id, data }) {
         </div>
 
         <Handle
+          type="target"
+          position={Position.Left}
+          id="table-target" 
+          className="!w-3 !h-3 !bg-blue-500 !border-2 !border-[#1a1a1a] transition-transform hover:scale-125 z-0"
+          style={{ left: -4, top: 28 }} 
+        />
+
+        <Handle
           type="source"
           position={Position.Right}
           id="table-source" 
           className="!w-3 !h-3 !bg-purple-500 !border-2 !border-[#1a1a1a] transition-transform hover:scale-125 z-0"
           style={{ right: -4, top: 28 }} 
         />
-
       </div>
+
       {isModalOpen && (
         <SchemaDetailModal 
             isOpen={isModalOpen}

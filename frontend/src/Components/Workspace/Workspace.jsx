@@ -13,11 +13,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import TableRefNode from './Nodes/TableRefNode';
 import DbNode from './Nodes/DbNode';
 import ApiNode from './Nodes/ApiNode';
-// Import useSchema here
 import { SchemaProvider, useSchema } from './SchemaContext';
 import { saveWorkflowData, getProjectData, deleteProjectAPI } from './WorkflowAPI';
 import { useUndoRedo } from './useUndoRedo';
 import FieldSelectionModal from './FieldSelectionModal';
+import RelationConnectionModal from './RelationConnectionModal'; 
 
 const nodeTypes = {
   dbNode: DbNode,
@@ -28,24 +28,35 @@ const nodeTypes = {
 function WorkspaceContent() {
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { deleteElements } = useReactFlow();
   
-  // Get Schema Context
-  const { savedSchemas, setSavedSchemas } = useSchema();
+  const { deleteElements, updateNodeData } = useReactFlow(); 
+  
+  const { savedSchemas, setSavedSchemas, updateSchema } = useSchema(); 
 
   const [activePanel, setActivePanel] = useState(null);
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
+  
   const [isDraggingNode, setIsDraggingNode] = useState(false);
+  
   const trashCanRef = useRef(null);
 
-  const [modalConfig, setModalConfig] = useState({
+  const [apiModalConfig, setApiModalConfig] = useState({
     isOpen: false,
     params: null,
     schema: null,
     apiMethod: ''
+  });
+
+  const [relationModalConfig, setRelationModalConfig] = useState({
+    isOpen: false,
+    params: null,
+    sourceNode: null,
+    targetNode: null
   });
 
   const { undo, redo, takeSnapshot } = useUndoRedo({
@@ -75,8 +86,6 @@ function WorkspaceContent() {
           if (canvasState) {
             setNodes(canvasState.nodes || []);
             setEdges(canvasState.edges || []);
-            
-            // Restore saved schemas from database to context
             if (tables && Array.isArray(tables)) {
                 setSavedSchemas(tables);
             }
@@ -114,12 +123,13 @@ function WorkspaceContent() {
     const targetNode = nodes.find((n) => n.id === params.target);
     if (!sourceNode || !targetNode) return "Invalid Connection!";
     if (params.source === params.target) return "Cannot connect a node to itself.";
+    
     const isSourceApi = sourceNode.type === 'apiNode';
     const isTargetApi = targetNode.type === 'apiNode';
-    const isSourceDb = sourceNode.type === 'dbNode' || sourceNode.type === 'tableRefNode';
-    const isTargetDb = targetNode.type === 'dbNode' || targetNode.type === 'tableRefNode';
+    
     if (isSourceApi && isTargetApi) return "Workflow Error: Cannot connect two API endpoints directly.";
-    if (isSourceDb && isTargetDb) return "Workflow Error: Cannot connect two Tables directly.";
+    
+
     const existingEdge = edges.find((e) =>
       e.source === params.source &&
       e.target === params.target
@@ -130,8 +140,7 @@ function WorkspaceContent() {
     return null;
   }, [nodes, edges]);
 
-  const onConnect = useCallback(
-    (params) => {
+  const onConnect = useCallback((params) => {
       const error = getValidationError(params);
       if (error) {
         toast.error(error, {
@@ -143,22 +152,32 @@ function WorkspaceContent() {
       const sourceNode = nodes.find((n) => n.id === params.source);
       const targetNode = nodes.find((n) => n.id === params.target);
 
-      setModalConfig({
-        isOpen: true,
-        params: params,
-        schema: sourceNode.data,
-        apiMethod: targetNode.data.method
-      });
-    },
-    [nodes, edges, getValidationError],
-  );
+      const isSourceDb = sourceNode.type === 'dbNode' || sourceNode.type === 'tableRefNode';
+      const isTargetDb = targetNode.type === 'dbNode' || targetNode.type === 'tableRefNode';
 
-  const onModalSave = (selectedFields) => {
+      if (isSourceDb && isTargetDb) {
+         setRelationModalConfig({ 
+            isOpen: true, 
+            params: params, 
+            sourceNode: sourceNode, 
+            targetNode: targetNode 
+         });
+      } else {
+         setApiModalConfig({
+            isOpen: true,
+            params: params,
+            schema: sourceNode.data,
+            apiMethod: targetNode.data.method
+         });
+      }
+    }, [nodes, edges, getValidationError]);
+
+  const onApiModalSave = (selectedFields) => {
     if (selectedFields.length === 0) {
       toast.error("Please select at least one field.");
       return;
     }
-    const { params } = modalConfig;
+    const { params } = apiModalConfig;
     takeSnapshot();
 
     const newEdge = {
@@ -170,8 +189,36 @@ function WorkspaceContent() {
 
     setEdges((eds) => addEdge(newEdge, eds));
     setIsDirty(true); 
-    toast.success("Linked Successfully", { icon: <Link size={16} />, style: { background: '#333', color: '#fff', border: '1px solid #22c55e' } });
-    setModalConfig({ isOpen: false, params: null, schema: null, apiMethod: '' });
+    toast.success("API Linked Successfully", { icon: <Link size={16} />, style: { background: '#333', color: '#fff', border: '1px solid #22c55e' } });
+    setApiModalConfig({ isOpen: false, params: null, schema: null, apiMethod: '' });
+  };
+
+  // NEW: Handle saving Table-to-Table relationships
+  const onRelationModalSave = (newForeignKeyField) => {
+    takeSnapshot();
+    const { sourceNode, targetNode, params } = relationModalConfig;
+
+    // 1. Update the Data Schema in context
+    const updatedFields = [...(sourceNode.data.fields || []), newForeignKeyField];
+    if (sourceNode.data.id) {
+        updateSchema(sourceNode.data.id, updatedFields);
+    }
+    
+    // 2. Update the Node UI on the canvas so the edge anchors correctly
+    updateNodeData(sourceNode.id, { fields: updatedFields });
+
+    // 3. Draw a cool blue line for database relations
+    const newEdge = { 
+        ...params, 
+        id: `e${params.source}-${params.target}`, 
+        animated: true, 
+        style: { stroke: '#3b82f6', strokeWidth: 2 } // Blue line to differentiate
+    };
+    
+    setEdges((eds) => addEdge(newEdge, eds));
+    setIsDirty(true);
+    toast.success("Relationship Created!", { icon: <Link size={16} />, style: { background: '#333', color: '#fff', border: '1px solid #3b82f6' } });
+    setRelationModalConfig({ isOpen: false, params: null, sourceNode: null, targetNode: null });
   };
 
   const onSave = useCallback(async () => {
@@ -214,7 +261,6 @@ function WorkspaceContent() {
       });
 
     const payload = {
-      // FIX: Save the actual Schema library, not just what is on canvas
       tables: savedSchemas, 
       endpoints: endpointsPayload,
       canvasState: { nodes, edges }
@@ -263,11 +309,11 @@ function WorkspaceContent() {
     };
     let initialData = { takeSnapshot };
     if (data.type === 'dbNode') {
-      initialData = { ...initialData, tableName: "", fields: [] };
+      initialData = { ...initialData, tableName: "", fields: [], timestamps: false };
     } else if (data.type === 'apiNode') {
       initialData = { ...initialData, method: data.method, route: "" };
     } else if (data.type === 'tableRefNode') {
-      initialData = { ...initialData, id: data.schema.id, tableName: data.schema.tableName, fields: data.schema.fields };
+      initialData = { ...initialData, id: data.schema.id, tableName: data.schema.tableName, fields: data.schema.fields, timestamps: data.schema.timestamps };
     }
     const newNode = {
       id: `${Date.now()}`,
@@ -310,9 +356,24 @@ function WorkspaceContent() {
   return (
     <div className="h-screen w-screen bg-[#1B1B1B] relative overflow-hidden">
       <Toaster position="bottom-right" />
-      {modalConfig.isOpen && (
-        <FieldSelectionModal isOpen={modalConfig.isOpen} onClose={() => setModalConfig({ ...modalConfig, isOpen: false })} onSave={onModalSave} schema={modalConfig.schema}
-          apiMethod={modalConfig.apiMethod}
+      
+      {apiModalConfig.isOpen && (
+        <FieldSelectionModal 
+            isOpen={apiModalConfig.isOpen} 
+            onClose={() => setApiModalConfig({ ...apiModalConfig, isOpen: false })} 
+            onSave={onApiModalSave} 
+            schema={apiModalConfig.schema}
+            apiMethod={apiModalConfig.apiMethod}
+        />
+      )}
+
+      {relationModalConfig.isOpen && (
+        <RelationConnectionModal 
+            isOpen={relationModalConfig.isOpen} 
+            onClose={() => setRelationModalConfig({ ...relationModalConfig, isOpen: false })} 
+            onSave={onRelationModalSave} 
+            sourceSchema={relationModalConfig.sourceNode.data} 
+            targetSchema={relationModalConfig.targetNode.data} 
         />
       )}
 
