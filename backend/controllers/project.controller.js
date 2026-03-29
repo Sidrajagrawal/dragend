@@ -117,8 +117,11 @@ exports.createProject = async (req, res) => {
 
 
 exports.getProjects = async (req, res) => {
+  console.log("user id");
   try {
-    const projects = await Project.find({ ownerId: req.user._id }).populate("databaseIds");
+    const projects = await Project.find({ ownerId: req.user._id })
+      .populate("databaseIds");
+
     res.json({ success: true, projects });
   } catch (err) {
     res.status(500).json({ msg: "Failed to fetch projects" });

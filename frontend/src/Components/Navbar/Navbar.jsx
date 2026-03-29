@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import { CheckAuth, logoutApi } from "../Auth/AuthAPI";
+import logo from '../../media/logo.png';
+// import Logo_gif from '../../media/logo_gif.mp4'
+import Dragend from '../../media/Dragend.svg';
+import { CheckAuth, logoutApi } from "../auth/AuthAPI";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);

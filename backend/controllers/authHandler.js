@@ -9,6 +9,7 @@ const {
   createPasswordSchema,
 } = require("../validations/auth");
 const sendEmail = require("../utils/SendEmail");
+const Project = require("../models/Project");
 require("dotenv").config();
 
 const jwtSec = process.env.JWT_SECRET;
@@ -243,6 +244,94 @@ async function authCheck(req, res) {
   }
 }
 
+async function checkUsername(req, res){
+  try {
+    const { username } = req.query;
+
+    if (!username || username.length < 3) {
+      return res.json({ available: false });
+    }
+
+    const exists = await User.findOne({ username });
+
+    res.json({
+      available: !exists,
+    });
+
+  } catch (err) {
+    res.status(500).json({ msg: "Error checking username" });
+  }
+};
+
+async function getPublicProfile(req, res){
+  try {
+    const { username } = req.params;
+ 
+    const user = await User.findOne({ username }).select(
+      "username email createdAt"
+    );
+ 
+    if (!user) {
+      return res.status(404).json({ success: false, msg: "User not found" });
+    }
+ 
+    const projects = await Project.find({ ownerId: user._id }).populate(
+      "databaseIds"
+    );
+ 
+    res.json({
+      success: true,
+      user,
+      projects,
+    });
+  } catch (err) {
+    console.error("getPublicProfile error:", err);
+    res.status(500).json({ msg: "Failed to fetch public profile" });
+  }
+};
+
+async function updateProfile(req, res){
+  console.log("called");
+  try {
+    const userId = req.user._id;
+    const { username } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    // 🔒 USERNAME UPDATE (WITH SAFETY CHECK)
+    if (username && username !== user.username) {
+      if (username.trim().length < 3) {
+        return res.status(400).json({ msg: "Username must be at least 3 characters" });
+      }
+
+      const exists = await User.findOne({ username });
+
+      if (exists) {
+        return res.status(400).json({ msg: "Username already taken" });
+      }
+
+      user.username = username.trim();
+    }
+
+    await user.save();
+
+    const updatedUser = await User.findById(userId).select("-password");
+
+    res.json({
+      success: true,
+      msg: "Profile updated successfully",
+      user: updatedUser,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to update profile" });
+  }
+};
+
 module.exports.createPasswordHandler = createPasswordHandler;
 module.exports.loginHandler = loginHandler;
 module.exports.signupHandler = signupHandler;
@@ -253,3 +342,6 @@ module.exports.logoutHandler = logoutHandler;
 module.exports.deleteHandler = deleteHandler;
 module.exports.authCheck = authCheck;
 module.exports.googleCallbackHandler = googleCallbackHandler;
+module.exports.checkUsername = checkUsername;
+module.exports.getPublicProfile = getPublicProfile;
+module.exports.updateProfile = updateProfile;

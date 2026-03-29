@@ -84,7 +84,7 @@ function LivePreview() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#1B1B1B] text-white p-6 overflow-hidden">
+        <div className="flex flex-col h-screen bg-[#1B1B1B] text-white p-6 overflow-hidden">
             
             {/* --- Header Section --- */}
             <div className="mb-6">

@@ -1,5 +1,6 @@
 import Navbar from "../Navbar/Navbar";
 import AboutSection from "./AboutSection";
+import { Featured } from "./Featured/Featured";
 import Footer from "./Footer";
 import HeroSection from "./HeroSection";
 import { ServicesSection } from "./ServicesSection";
@@ -12,6 +13,7 @@ const Home = () => {
         <div className="col-start-1 row-start-1 z-10 h-[12vh] text-black">
                 <Navbar />
                 <HeroSection/>
+                <Featured/>
                 <ServicesSection/>
                 <AboutSection/>
                 <Footer/>
