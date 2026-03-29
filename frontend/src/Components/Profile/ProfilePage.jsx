@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 
 export const ProfilePage = () => {
   const [tab, setTab] = useState("overview");
-
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +23,6 @@ export const ProfilePage = () => {
           getProfile(),
           getProjects(),
         ]);
-
         setUser(profileRes.data.user);
         setProjects(projectRes.data.projects);
       } catch (err) {
@@ -34,40 +32,43 @@ export const ProfilePage = () => {
         setLoading(false);
       }
     };
-
     fetchAll();
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!loading && !user) navigate('/auth');
+  }, [loading, user, navigate]);
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-white">
+      <div className="h-screen flex items-center justify-center bg-gray-50">
         <motion.div
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-gray-400 text-sm font-medium"
+          className="text-purple-600 text-sm font-medium tracking-widest uppercase"
         >
-          Loading profile...
+          Loading Data...
         </motion.div>
       </div>
     );
   }
 
-  if (!user) {
-    navigate('/auth');
-  }
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto bg-white shadow-sm rounded-none md:rounded-2xl overflow-hidden">
+    <div className="min-h-screen bg-[#fafafa] text-gray-900 pt-2 pb-10 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-400/10 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="relative max-w-5xl mx-auto bg-white shadow-2xl shadow-purple-900/5 rounded-none md:rounded-3xl border border-gray-100 overflow-hidden">
         <ProfileHeader user={user} projects={projects} onUserUpdate={setUser} />
         <ProfileTabs tab={tab} setTab={setTab} />
 
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
           >
             {tab === "overview" ? (
