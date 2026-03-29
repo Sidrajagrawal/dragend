@@ -86,10 +86,6 @@ export const ProjectCard = ({ project, index = 0, isLatest = false, readonly = f
             <span className="text-xs font-semibold" style={{ color: "#15803d" }}>Latest</span>
           </div>
         )}
-
-        <span className="text-xs font-medium opacity-30 z-10" style={{ color: palette.accent }}>
-          Canvas Preview
-        </span>
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
