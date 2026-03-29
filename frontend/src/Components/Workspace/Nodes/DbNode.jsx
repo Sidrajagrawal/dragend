@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
-import { Pencil, Trash2, X, Save, Check } from "lucide-react";
+import { Pencil, Trash2, X, Save, Check, Clock } from "lucide-react"; 
 import SchemaForm from "../Database/SchemaForm";
 import toast from "react-hot-toast";
 import { useSchema } from "../SchemaContext";
@@ -16,6 +16,11 @@ function DbNode({ id, data }) {
     updateNodeData(id, { tableName: evt.target.value });
   }, [id, updateNodeData]);
 
+  const toggleTimestamps = () => {
+    data.takeSnapshot?.();
+    updateNodeData(id, { timestamps: !data.timestamps });
+  };
+
   const handleSaveSchema = () => {
     if (!data.tableName || data.tableName.trim() === "") {
       toast.error("Schema Name is required!");
@@ -25,10 +30,12 @@ function DbNode({ id, data }) {
       toast.error("Add at least one field!");
       return;
     }
+    
     saveSchema({
       id: id,
       tableName: data.tableName,
-      fields: data.fields
+      fields: data.fields,
+      timestamps: data.timestamps || false 
     });
 
     toast.success(`Schema "${data.tableName}" Saved & Moved to API Panel`, {
@@ -70,15 +77,26 @@ function DbNode({ id, data }) {
   return (
     <>
       <div className="relative w-30 bg-[#202020] text-white text-[8px] rounded-lg shadow-xl border border-gray-700 transition-all hover:border-gray-500">
+        
         <div className="text-center p-1 border-b border-gray-700 bg-[#252525] rounded-t-lg flex justify-between items-center px-2">
-
           <input type="text" placeholder="SCHEMA NAME" onChange={onNameChange} value={data.tableName || ''}
             className="nodrag w-full text-[8px] font-bold bg-transparent outline-none text-left placeholder-gray-500 uppercase tracking-wide text-gray-200"
           />
-          <button onClick={handleSaveSchema} className="text-gray-400 hover:text-green-400 transition-colors" title="Save & Close">
-            <Save size={10} />
-          </button>
+          
+          <div className="flex items-center gap-1.5 ml-2">
+            <button 
+              onClick={toggleTimestamps} 
+              className={`transition-colors ${data.timestamps ? 'text-green-400' : 'text-gray-500 hover:text-gray-300'}`} 
+              title={data.timestamps ? "Timestamps Enabled" : "Enable Timestamps"}
+            >
+              <Clock size={10} />
+            </button>
+            <button onClick={handleSaveSchema} className="text-gray-400 hover:text-green-400 transition-colors" title="Save & Close">
+              <Save size={10} />
+            </button>
+          </div>
         </div>
+
         <div className="p-1 min-h-[20px] flex flex-col gap-1">
           {(data.fields || []).map((field, index) => (
             <div onClick={(e) => { e.stopPropagation(); setExpandedIndex(expandedIndex === index ? null : index); }} key={index}
@@ -97,7 +115,27 @@ function DbNode({ id, data }) {
               </div>
             </div>
           ))}
+
+          {data.timestamps && (
+            <div className="mt-0.5 pt-1 border-t border-gray-700/50 flex flex-col gap-1">
+              <div className="flex items-center justify-between bg-[#2a2a2a]/40 rounded px-2 py-1 border border-dashed border-gray-600/30 opacity-70">
+                <div className="flex items-center gap-1.5">
+                  <Clock size={8} className="text-gray-400" />
+                  <span className="truncate font-medium text-[9px] text-gray-400 italic">created_at</span>
+                </div>
+                <span className="text-[8px] text-gray-500 font-mono">date</span>
+              </div>
+              <div className="flex items-center justify-between bg-[#2a2a2a]/40 rounded px-2 py-1 border border-dashed border-gray-600/30 opacity-70">
+                <div className="flex items-center gap-1.5">
+                  <Clock size={8} className="text-gray-400" />
+                  <span className="truncate font-medium text-[9px] text-gray-400 italic">updated_at</span>
+                </div>
+                <span className="text-[8px] text-gray-500 font-mono">date</span>
+              </div>
+            </div>
+          )}
         </div>
+
         {expandedIndex !== null && data.fields && data.fields[expandedIndex] && (
           <div className="absolute top-0 left-full ml-3 w-25 bg-[#1f1f1f] border border-gray-600 rounded-lg shadow-2xl p-2 text-[8px] z-50 animate-in fade-in zoom-in-95 duration-200">
             <div className="font-bold text-white mb-1 text-[8px] border-b border-gray-700 pb-1 flex justify-between items-center">
@@ -118,7 +156,7 @@ function DbNode({ id, data }) {
             </div>
           </div>
         )}
-
+        
         <div className="p-1.5 border-t border-gray-700 text-center">
           <button className="nodrag text-[9px] font-medium text-gray-400 hover:text-white hover:bg-[#333] py-1 rounded w-full transition-colors border border-dashed border-gray-700 hover:border-gray-500"
             onClick={() => { setEditingFieldIndex(null); setShowForm(true); }}>

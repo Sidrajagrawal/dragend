@@ -25,16 +25,16 @@ export function DragEndCreateFlow() {
     description: "",
     backend: "",
     dbType: "",
+    environment: "", 
+    connectionMode: "", 
     authType: "",
     connectionName: "",
     serviceName: "",
-    host: "localhost", // Default for convenience
+    host: "localhost",
     port: "",
     uri: "",
-    endpoint: "",
     username: "",
     password: "",
-    apiKey: "",
   });
 
   const update = (k, v) => {
@@ -57,38 +57,46 @@ export function DragEndCreateFlow() {
       }
     } catch (err) {
       toast.error(err);
+      setLoading(false); 
     }
   };
 
   const validateStep = () => {
     const e = {};
 
-    if (step === 1 && !formData.projectName)
+    if (step === 1 && !formData.projectName) {
       e.projectName = "Project name required.";
+    }
+
     if (step === 2) {
       if (!formData.backend) e.backend = "Select backend.";
     }
+
     if (step === 3) {
       if (!formData.dbType) e.dbType = "Select database!";
-      if (!formData.authType)
-        e.authType = "Please specify Authentication type for connection";
+      if (!formData.environment) e.environment = "Select environment (Local or Deployed)!";
     }
+
     if (step === 4) {
       if (!formData.connectionName) e.connectionName = "Connection Name Required";
 
-      if (formData.authType === "uri") {
-        if (!formData.uri) e.uri = "Database URI required";
-      }
-      if (formData.authType === "credentials") {
-        if (!formData.host) e.host = "Host is required (e.g., localhost)";
-        if (!formData.port) e.port = "Port is required";
-        if (!formData.username) e.username = "Username required";
-        if (!formData.password) e.password = "Password required";
-      }
-
-      if (formData.authType === "apiKey") {
-        if (!formData.endpoint) e.endpoint = "Endpoint required";
-        if (!formData.apiKey) e.apiKey = "API key required";
+      if (formData.environment === "local") {
+        if (formData.dbType !== "mongodb") {
+          if (!formData.host) e.host = "Host is required (e.g., localhost)";
+          if (!formData.port) e.port = "Port is required";
+          if (!formData.username) e.username = "Username required";
+          if (!formData.password) e.password = "Password required";
+        }
+      } 
+      else if (formData.environment === "deployed") {
+        if (formData.connectionMode === "uri" || !formData.connectionMode) {
+          if (!formData.uri) e.uri = "Public Database URI required";
+        } else if (formData.connectionMode === "credentials") {
+          if (!formData.host) e.host = "Public Host is required";
+          if (!formData.port) e.port = "Port is required";
+          if (!formData.username) e.username = "Username required";
+          if (!formData.password) e.password = "Password required";
+        }
       }
     }
 
@@ -97,7 +105,14 @@ export function DragEndCreateFlow() {
   };
 
   const next = () => validateStep() && setStep((s) => Math.min(5, s + 1));
-  const back = () => setStep((s) => Math.max(1, s - 1));
+  
+  const back = () => {
+    if (step === 1) {
+      navigate('/');
+    } else {
+      setStep((s) => s - 1);
+    }
+  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -133,7 +148,7 @@ export function DragEndCreateFlow() {
                       }`}
                   >
                     <div
-                      className={`w-2 h-2 rounded-full ${step >= stepNumber ? "bg-pink-500" : "bg-gray-300"
+                      className={`w-2 h-2 rounded-full mt-1.5 ${step >= stepNumber ? "bg-pink-500" : "bg-gray-300"
                         }`}
                     />
                     <span className="text-sm font-medium">{label}</span>
@@ -151,9 +166,10 @@ export function DragEndCreateFlow() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
               >
                 {step === 1 && (
                   <StepIdentity
@@ -180,18 +196,19 @@ export function DragEndCreateFlow() {
             </AnimatePresence>
           </div>
 
-          <div className="p-6 border-t flex justify-between">
+          <div className="p-6 border-t flex justify-between bg-gray-50/50">
+
             <button
               onClick={back}
-              className="flex items-center gap-2 text-gray-600 cursor-pointer"
+              className="flex items-center gap-2 text-gray-600 cursor-pointer transition-colors hover:text-gray-900 active:scale-95"
             >
-              <ArrowLeft size={16} /> Back
+              <ArrowLeft size={16} /> {step === 1 ? "Back to Home" : "Back"}
             </button>
 
             {step < 5 && (
               <button
                 onClick={next}
-                className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
+                className="cursor-pointer px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95"
               >
                 Continue <ArrowRight size={16} className="inline ml-1" />
               </button>
@@ -199,9 +216,10 @@ export function DragEndCreateFlow() {
             {step === 5 && (
               <button
                 onClick={handleSubmit}
-                className="cursor-pointer px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow"
+                disabled={loading}
+                className={`cursor-pointer px-6 py-2.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl shadow-md hover:shadow-lg transition-all ${loading ? 'opacity-70 pointer-events-none' : 'active:scale-95'}`}
               >
-                {loading ? "Creating..." : "Submit"} <ArrowRight size={16} className="inline ml-1" />
+                {loading ? "Creating..." : "Submit"} {!loading && <ArrowRight size={16} className="inline ml-1" />}
               </button>
             )}
           </div>

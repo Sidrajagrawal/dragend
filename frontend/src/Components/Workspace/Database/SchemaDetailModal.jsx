@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Plus, Trash2, Pencil, Database } from "lucide-react";
+import { X, Plus, Trash2, Pencil, Database, Clock } from "lucide-react"; 
 import ModalPortal from "../../common/ModalPortal"; 
 import SchemaForm from "./SchemaForm"; 
 
@@ -9,6 +9,7 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
     const [editingFieldIndex, setEditingFieldIndex] = useState(null);
 
     if (!isOpen) return null;
+
     const handleSaveField = (fieldData) => {
         let updatedFields = [...fields];
         if (editingFieldIndex !== null) {
@@ -32,13 +33,22 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
         <ModalPortal>
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[50] animate-in fade-in duration-200">
                 <div className="bg-[#1e1e1e] w-[500px] rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                    
                     <div className="px-5 py-4 bg-[#252525] border-b border-gray-700 flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
                                 <Database size={18} />
                             </div>
-                            <div>
-                                <h2 className="text-sm font-bold text-white uppercase tracking-wider">{schemaData.tableName}</h2>
+                            <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">{schemaData.tableName}</h2>
+                                  
+                                  {schemaData.timestamps && (
+                                    <span className="bg-green-500/10 text-green-400 border border-green-500/20 px-1.5 py-0.5 rounded text-[8px] flex items-center gap-1 font-medium tracking-wide" title="Auto-generates created_at & updated_at">
+                                      <Clock size={8} /> TIMESTAMPS
+                                    </span>
+                                  )}
+                                </div>
                                 <span className="text-[10px] text-gray-400">Manage Model Schema</span>
                             </div>
                         </div>
@@ -46,6 +56,7 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
                             <X size={18} />
                         </button>
                     </div>
+
                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-2">
                         {fields.length === 0 ? (
                             <div className="text-center py-8 text-gray-500 text-xs border border-dashed border-gray-700 rounded-lg">
@@ -65,6 +76,9 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
                                                 <span className="text-[9px] font-mono text-purple-400 bg-purple-400/10 px-1 rounded">{field.type}</span>
                                                 {field.required && <span className="text-[9px] text-gray-500">Required</span>}
                                                 {field.constraint && <span className="text-[9px] text-blue-400 capitalize">{field.constraint}</span>}
+                                                
+                                                {field.isUuid && <span className="text-[9px] text-yellow-500">UUID</span>}
+                                                {field.autoIncrement && <span className="text-[9px] text-yellow-500">Auto-Inc</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -79,6 +93,36 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
                                 </div>
                             ))
                         )}
+
+                        {schemaData.timestamps && (
+                            <div className="pt-2 mt-2 border-t border-gray-700/50 space-y-2">
+                                <div className="flex items-center justify-between p-3 bg-[#2a2a2a]/40 rounded-lg border border-dashed border-gray-600/30 opacity-70 cursor-not-allowed">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-gray-600/50" />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-400 italic">created_at</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-mono text-gray-500 bg-gray-800 px-1 rounded">date</span>
+                                                <span className="text-[9px] text-gray-500 flex items-center gap-1"><Clock size={8}/> Auto</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-[#2a2a2a]/40 rounded-lg border border-dashed border-gray-600/30 opacity-70 cursor-not-allowed">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full flex-shrink-0 bg-gray-600/50" />
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-400 italic">updated_at</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-mono text-gray-500 bg-gray-800 px-1 rounded">date</span>
+                                                <span className="text-[9px] text-gray-500 flex items-center gap-1"><Clock size={8}/> Auto</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                     <div className="p-4 bg-[#252525] border-t border-gray-700 flex justify-between items-center">
                         <button onClick={() => onDeleteSchema?.(schemaData.id)} className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1.5 px-2 py-1.5 rounded hover:bg-red-500/10 transition-colors">
@@ -89,10 +133,10 @@ function SchemaDetailModal({ isOpen, onClose, schemaData, onUpdate, onDeleteSche
                         </button>
                     </div>
                 </div>
+                
                 {showFieldForm && (
                     <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/20">
-                        <SchemaForm initialData={editingFieldIndex !== null ? fields[editingFieldIndex] : null} onClose={() => setShowFieldForm(false)} onSave={handleSaveField}
-                        />
+                        <SchemaForm initialData={editingFieldIndex !== null ? fields[editingFieldIndex] : null} onClose={() => setShowFieldForm(false)} onSave={handleSaveField} />
                     </div>
                 )}
             </div>
