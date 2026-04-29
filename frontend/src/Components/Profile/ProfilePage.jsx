@@ -58,9 +58,20 @@ export const ProfilePage = () => {
   return (
     <div className="min-h-screen bg-[#fafafa] text-gray-900 pt-2 pb-10 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-400/10 blur-[100px] rounded-full pointer-events-none" />
-
       <div className="relative max-w-5xl mx-auto bg-white shadow-2xl shadow-purple-900/5 rounded-none md:rounded-3xl border border-gray-100 overflow-hidden">
+        <div className="ml-5">
+          <button
+            onClick={() => navigate("/")}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 
+             bg-purple-600 text-white font-medium rounded-full 
+             shadow-lg hover:bg-purple-700 transition-all duration-300 
+             active:scale-95 z-50"
+          >
+            Home
+          </button>
+        </div>
         <ProfileHeader user={user} projects={projects} onUserUpdate={setUser} />
+
         <ProfileTabs tab={tab} setTab={setTab} />
 
         <AnimatePresence mode="wait">

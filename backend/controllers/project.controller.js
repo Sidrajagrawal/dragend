@@ -23,7 +23,7 @@ exports.createProject = async (req, res) => {
       username,
       password,
       serviceName,
-      environment // Removed endpoint and apiKey from here
+      environment
     } = req.body;
 
     const user = req.user._id;
@@ -59,19 +59,18 @@ exports.createProject = async (req, res) => {
       name: projectName,
       ownerId: user,
       description,
+      backendStack: backend
     });
 
     let configPayload = {};
     let finalAuthType = authType;
 
-    // Safety net: Automatically build Local Mongo URI if the frontend forgot
     let finalUri = uri;
     if (environment === "local" && normalizedDbType === "mongodb" && !finalUri) {
       finalUri = `mongodb://localhost:27017/${connectionName || 'local_db'}`;
       finalAuthType = "uri";
     }
 
-    // Prepare credentials object (Removed the apiKey block completely)
     if (finalAuthType === "uri") {
       configPayload = { uri: finalUri };
     } else if (finalAuthType === "credentials") {
@@ -117,7 +116,6 @@ exports.createProject = async (req, res) => {
 
 
 exports.getProjects = async (req, res) => {
-  console.log("user id");
   try {
     const projects = await Project.find({ ownerId: req.user._id })
       .populate("databaseIds");

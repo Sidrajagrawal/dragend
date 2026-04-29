@@ -10,6 +10,10 @@ const projectSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  backendStack: {
+    type: String,
+    default: ""
+  },
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
