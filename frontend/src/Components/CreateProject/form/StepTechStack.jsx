@@ -5,8 +5,8 @@ import { Globe, Server } from "lucide-react";
 const BACKENDS = [
   { name: "Node + Express", logo: import.meta.env.VITE_NODEJS_LOGO },
   { name: "FastAPI", logo: import.meta.env.VITE_FASTAPI_LOGO },
+  { name: "Flask", logo: import.meta.env.VITE_FLASK_LOGO },
   { name: "Django", logo: import.meta.env.VITE_DJANGO_LOGO },
-  { name: "Laravel", logo: import.meta.env.VITE_LARAVEL_LOGO },
   { name: "Spring Boot", logo: import.meta.env.VITE_SBOOT_LOGO }
 ];
 
